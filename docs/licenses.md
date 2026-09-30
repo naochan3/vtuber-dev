@@ -17,3 +17,5 @@ See-throughの初期設定モデル:
 モデル重みをこのリポジトリで再配布しません。商用で多数のクリエイターへ提供する段階では、実際に使う重み・派生モデル・素材の条件を記録して判断します。「コードがMITだから重みも制限なし」とは扱いません。
 
 THA3のクレジット例: Talking Head Anime 3 — Pramook Khungurn / CC BY 4.0 / https://github.com/pkhungurn/talking-head-anime-3-demo
+
+改良プレビューはAnime2.5DRigの上記固定版を改変し、MITのLICENSEとアプリ名を保持しています。ビューア内のサンプルボタンは公式のサンプル素材です。このプロジェクトの女性キャラと開き口はimagegenで生成した素材です。開き口の最終プロンプトは `assets/expressions/mouth-open-v2.prompt.txt` に保存しています。
