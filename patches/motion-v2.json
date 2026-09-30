@@ -4,15 +4,15 @@
   "replacements": [
     {
       "before": "const ab=e.body*0.028,cb=Math.cos(ab),sb=Math.sin(ab);",
-      "after": "const ab=e.body*0.055,cb=Math.cos(ab),sb=Math.sin(ab);"
+      "after": "const ab=e.body*0.065,cb=Math.cos(ab),sb=Math.sin(ab);"
     },
     {
       "before": "let hw=isHead?1:(L.group==='body'?0.16:0);",
-      "after": "let hw=isHead?1:(L.group==='body'?0.30:0);"
+      "after": "let hw=isHead?1:(L.group==='body'?0.35:0);"
     },
     {
       "before": "const bodyDX=e.body*0.028*(BP.cy-NP.cy)*0.35+e.angleX*14*0.16*FS;",
-      "after": "const bodyDX=e.body*0.055*(BP.cy-NP.cy)*0.35+e.angleX*14*0.30*FS;"
+      "after": "const bodyDX=e.body*0.065*(BP.cy-NP.cy)*0.35+e.angleX*22*0.35*FS;"
     },
     {
       "before": "    tgt.body=clamp(tgt.body+cam.ax*0.25,-1,1);",
@@ -24,11 +24,7 @@
     },
     {
       "before": "for(const k in cur){tgt[k]=RT.clamp(tgt[k],...parameterRanges[k]);cur[k]+=(tgt[k]-cur[k])*kSmooth;}",
-      "after": "for(const k in cur){tgt[k]=RT.clamp(tgt[k],...parameterRanges[k]);const kFollow=k==='body'?1-Math.exp(-dt*5):kSmooth;cur[k]+=(tgt[k]-cur[k])*kFollow;}"
-    },
-    {
-      "before": "mouthGain:[0.5,2.5,1]",
-      "after": "mouthGain:[0.5,2.5,1.4]"
+      "after": "for(const k in cur){tgt[k]=RT.clamp(tgt[k],...parameterRanges[k]);const rate=k==='body'?5:k.startsWith('angle')?8:k.startsWith('eyeOpen')?22:14;cur[k]+=(tgt[k]-cur[k])*(1-Math.exp(-dt*rate));}"
     },
     {
       "before": "  sync.startPolling();\n  if(CAMERA_MODE)setAuto('cam',true);",
@@ -77,6 +73,38 @@
     {
       "before": "    if(alpha>=0.004)items.push({L,alpha,clip:L.bn==='irides'&&L.side?L.side:null});",
       "after": "    if(alpha>=0.004)items.push({L,alpha,clip:L.bn==='irides'&&L.side?L.side:null});\n    if(L.neckCover){\n      if(neck&&neck.visible&&neck.opacity>=0.004)items.push({L:neck,alpha:neck.opacity,clip:null});\n      renderer.positions(L.neckCover,L.cur);\n      items.push({L:L.neckCover,alpha,clip:null});\n    }"
+    },
+    {
+      "before": "const az=e.angleZ*0.07,cz=Math.cos(az),sz=Math.sin(az);",
+      "after": "const az=e.angleZ*0.12,cz=Math.cos(az),sz=Math.sin(az);"
+    },
+    {
+      "before": "const headDX=(e.angleX*14+e.angleZ*0.07*(NP.cy-FC.y))*FS;",
+      "after": "const headDX=(e.angleX*22+e.angleZ*0.12*(NP.cy-FC.y))*FS;"
+    },
+    {
+      "before": "x+=hw*FS*(e.angleX*(14+40*(dd-1))+e.angleX*(NP.cy-y)*0.028);",
+      "after": "x+=hw*FS*(e.angleX*(22+63*(dd-1))+e.angleX*(NP.cy-y)*0.044);"
+    },
+    {
+      "before": "y+=hw*FS*(-e.angleY*(9+30*(dd-1))-e.angleY*(dd-1)*(y-FC.y)*0.05);",
+      "after": "y+=hw*FS*(-e.angleY*(14+47*(dd-1))-e.angleY*(dd-1)*(y-FC.y)*0.078);"
+    },
+    {
+      "before": "  const kSmooth=1-Math.exp(-dt*14);",
+      "after": "  // 顔・体はなめらかに、目と口は素早く追従する。"
+    },
+    {
+      "before": "  headGain:[0.3,2,1],eyeGain:[0.5,2,1],mouthGain:[0.5,2.5,1],browGain:[0,2,1],gazeGain:[0,2,1],smoothing:[0,1,0.5],",
+      "after": "  headGain:[0.3,2,1.6],eyeGain:[0.5,2,1],mouthGain:[0.5,2.5,1.4],browGain:[0,2,1],gazeGain:[0,2,1],smoothing:[0,1,0.65],"
+    },
+    {
+      "before": "  linkEyes:['bool',true],trackBrow:['bool',true],trackSmile:['bool',true],camPreview:['bool',true],",
+      "after": "  linkEyes:['bool',false],trackBrow:['bool',true],trackSmile:['bool',true],camPreview:['bool',true],motionProfile:['enum',[0,3],0],"
+    },
+    {
+      "before": "const prefSliders={prefHeadGain:'headGain'",
+      "after": "// 以前のブラウザ設定にも一度だけ新しい追従設定を反映する。\nfunction upgradeMotionPrefs(value){\n  if(value.motionProfile===3)return false;\n  if(value.headGain===1)value.headGain=1.6;\n  if(value.smoothing===0.5)value.smoothing=0.65;\n  value.linkEyes=false;value.motionProfile=3;return true;\n}\nif(upgradeMotionPrefs(prefs))savePrefs();\nconst prefSliders={prefHeadGain:'headGain'"
     }
   ]
 }
