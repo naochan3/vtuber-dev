@@ -1,0 +1,30 @@
+{
+  "upstream_commit": "7ddbd9943ea3152561b3dc8348fd752c850f3e95",
+  "source_sha256": "0fa5a7967919af04ee411fc928662e3985cf32cd17fc2dc1976dd4788129163e",
+  "replacements": [
+    {
+      "before": "    var mw = d(I.mouth.right, I.mouth.left) || 1e-4;",
+      "after": "    // 顔の縦軸へ投影して、首の傾きとまばたきによる眉の誤反応を抑える。\n    var axis = {x:(chin.x-top.x)/fh,y:(chin.y-top.y)/fh};\n    function stableBrow(ids,e){\n      var bx=0,by=0;ids.forEach(function(i){var p=P(i);bx+=p.x;by+=p.y;});\n      var a=P(e.outer),b=P(e.inner);\n      return (((a.x+b.x)/2-bx/ids.length)*axis.x+((a.y+b.y)/2-by/ids.length)*axis.y)/fh;\n    }\n    var mw = d(I.mouth.right, I.mouth.left) || 1e-4;"
+    },
+    {
+      "before": "    if (out.hasIris) {",
+      "after": "    // zは画像のxと同じ尺度。画面の縦横比を補正して上下向きを求める。\n    if(Number.isFinite(lm[I.forehead].z)&&Number.isFinite(lm[I.chin].z))\n      out.pitchDepth=Math.atan2((lm[I.chin].z-lm[I.forehead].z)*ar,fh);\n    out.browStableL=stableBrow(I.browR,I.eyeR);out.browStableR=stableBrow(I.browL,I.eyeL);\n    if (out.hasIris) {"
+    },
+    {
+      "before": "    // A calibration taken with eyes half-closed would make blinking impossible.",
+      "after": "    // 追加値は任意。旧版の正面記録を無効にしない。\n    ['pitchDepth','browStableL','browStableR'].forEach(function(k){\n      var values=valid.map(function(m){return m[k];}).filter(Number.isFinite);\n      if(values.length)out[k]=values.reduce(function(s,v){return s+v;},0)/values.length;\n    });\n    // A calibration taken with eyes half-closed would make blinking impossible."
+    },
+    {
+      "before": "    return {\n      ax: clamp",
+      "after": "    if(Number.isFinite(n.browStableL)&&Number.isFinite(n.browStableR)&&\n       Number.isFinite(m.browStableL)&&Number.isFinite(m.browStableR))\n      brow=((m.browStableL-n.browStableL)+(m.browStableR-n.browStableR))/2;\n    var pitch=Number.isFinite(m.pitchDepth)?\n      (m.pitchDepth-(Number.isFinite(n.pitchDepth)?n.pitchDepth:0))*2.4:(m.pitch-n.pitch)*5.5;\n    return {\n      ax: clamp"
+    },
+    {
+      "before": "ay: clamp(-(m.pitch - n.pitch) * 3.0 * g('headGain'), -1, 1)",
+      "after": "ay: clamp(-pitch * g('headGain'), -1, 1)"
+    },
+    {
+      "before": "clamp(brow / (0.022 / g('browGain')), -1, 1)",
+      "after": "clamp(brow / (0.018 / g('browGain')), -1, 1)"
+    }
+  ]
+}

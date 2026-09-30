@@ -20,7 +20,10 @@ jobs:
       - name: 調整を適用して公開用ファイルを組み立て
         run: |
           python scripts/apply-rig-tuning.py --source upstream/lib/app.js --manifest patches/motion-v2.json
+          python scripts/apply-rig-tuning.py --source upstream/lib/face-features.js --manifest patches/face-tracking-v5.json
           node --check upstream/lib/app.js
+          node --check upstream/lib/face-features.js
+          node tests/face-tracking.test.cjs upstream/lib/face-features.js
           node tests/motion-profile.test.cjs upstream/lib/app.js upstream/lib/face-features.js
           node tests/torso-motion.test.cjs upstream/lib/app.js
           node tests/eye-hair-motion.test.cjs upstream/lib/app.js upstream/lib/runtime.js
@@ -34,9 +37,11 @@ jobs:
           from pathlib import Path
           page = Path('_site/index.html')
           source = page.read_text(encoding='utf-8')
-          old = 'src="lib/app.js"'
-          assert source.count(old) == 1
-          page.write_text(source.replace(old, 'src="lib/app.js?revision=' + os.environ['GITHUB_SHA'] + '"'), encoding='utf-8')
+          for name in ('app.js', 'face-features.js'):
+              old = 'src="lib/' + name + '"'
+              assert source.count(old) == 1
+              source = source.replace(old, 'src="lib/' + name + '?revision=' + os.environ['GITHUB_SHA'] + '"')
+          page.write_text(source, encoding='utf-8')
           PY
           test -f _site/avatars/base-speaking-v2.psd
           test -f _site/avatars/base-speaking-v2.rig.json

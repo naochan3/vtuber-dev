@@ -209,6 +209,18 @@
     {
       "before": "    deform(L,e);renderer.positions(L,L.cur);\n    if(isMask)",
       "after": "    deform(L,e);renderer.positions(L,L.cur);\n    if(L.drapeBack&&alpha>=0.004){\n      renderer.positions(L.drapeBack,L.cur);\n      items.unshift({L:L.drapeBack,alpha,clip:null});\n    }\n    if(isMask)"
+    },
+    {
+      "before": "(-e.brow*9+(1-vOpen)*3.5)",
+      "after": "(-e.brow*18+(1-vOpen)*3.5)"
+    },
+    {
+      "before": "-e.angleY*(14+47*(dd-1))-e.angleY*(dd-1)*(y-FC.y)*0.078",
+      "after": "-e.angleY*(24+58*(dd-1))-e.angleY*(dd-1)*(y-FC.y)*0.098"
+    },
+    {
+      "before": "e.angleY*(14+47*(L.depth-1))",
+      "after": "e.angleY*(24+58*(L.depth-1))"
     }
   ]
 }
