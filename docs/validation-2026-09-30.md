@@ -9,7 +9,8 @@
 | `avatars/base-speaking-v2.psd` | 21レイヤー、元の20レイヤーの画素をすべて保持 |
 | `avatars/base-speaking-v2.rig.json` | 改良PSDから書き出し、読み戻し成功。modelId `a6068e-293dc8a5-5f5ed455` |
 | `preview/speaking-v2.webm` | VP9、1280×1280、108フレーム、最終時刻4.705秒。カメラ・マイクなし |
-| `preview/speaking-neck-mask.webm` | 首マスク修正後。VP9、1280×1280、103フレーム、最終時刻4.663秒。カメラ・マイクなし |
+| `preview/speaking-neck-mask.webm` | 水平マスク時点の旧版。首が浮いて見える問題が残る。VP9、1280×1280、103フレーム、最終時刻4.663秒 |
+| `preview/speaking-collar-fit.webm` | 襟への接続修正後。VP9、1280×1280、125フレーム、最終時刻4.957秒。カメラ・マイクなし |
 
 SHA256:
 
@@ -22,6 +23,8 @@ avatars/base-speaking-v2.psd
 a95f7d47883ce1f6071e470e2b440c2067dba57324f8bb57d8f64a58f9e0d84f
 preview/speaking-neck-mask.webm
 d3d39eb7fac1ca9421196500fd778d1252be058181f0ebca4aa574de8a9bbe5b
+preview/speaking-collar-fit.webm
+1e8224db53e81bf0d89a5847e01acbd8aeec0efbebff74af7c09d1432270ec68
 ```
 
 ## 合格・観察済み
@@ -35,17 +38,19 @@ d3d39eb7fac1ca9421196500fd778d1252be058181f0ebca4aa574de8a9bbe5b
 - [コード公開コミット](https://github.com/naochan3/vtuber-dev/commit/07282c1f12b79bedcfc772dfc27c3b870cfd74d5) の [GitHub Actions](https://github.com/naochan3/vtuber-dev/actions/runs/36692956843) で公式NodeテストとPages公開が成功。
 - [首マスク修正コミット](https://github.com/naochan3/vtuber-dev/commit/efd36f314ca60a0b552aed133bdf916e282a32a3) の [GitHub Actions](https://github.com/naochan3/vtuber-dev/actions/runs/36716876865) も成功。襟元を下げる試案を取り下げ、首の上側だけを衣装の前へ追加描画する方式に置き換え。
 - 改良プレビューで専用開き口・元の閉じ口を認識。手動のX/Z=`+0.6/+0.8`、`−0.6/−0.8`で首・肩・胴体のつながりを画面確認。
-- 首マスク追加後、正面、X/Z=`−0.6/−0.8`、X/Y/Z=`+0.6/+0.5/+0.8`、Y=`−0.5`で首の上側が見え、襟・衣装が下側を隠す状態を画面確認。実カメラではなく手動スライダーの検証。
+- 水平マスク追加時点では上側の首を表示できたが、ユーザーの追加指摘で首下端と襟の間に隙間が残ると判明。この時点を首の接続修正の完成とは扱わない。
+- [襟への接続修正コミット](https://github.com/naochan3/vtuber-dev/commit/49d59c909c8473776b65ff6796e1231fdc7c8e47) の [GitHub Actions](https://github.com/naochan3/vtuber-dev/actions/runs/36720435661) で公式NodeテストとPages公開が成功。
+- 金色の襟縁で衣装を前後に分け、背面の襟→首（一度だけ）→前面の襟→顔の順へ変更。正面、X/Z=`−0.6/−0.8`、X/Y/Z=`+0.6/+0.5/+0.8`、Y=`−0.5`の手動ポーズで、水平なぶつ切りがなく首が襟の内側につながる表示を確認。
 - 公式サンプルAへの切り替え後、v2のPSDとJSONを再読み込みし、描画・首マスク・口設定が復元されることを確認。GPUメモリ量の計測はしていません。
 - 改良動画を既存FFmpegでデコードし、1秒間隔のフレームで開口と閉口・上半身の動きを確認。
 
-正面の首マスク修正結果:
+正面の首と襟の接続修正結果:
 
-![首の上側が見え、下側を襟が隠す正面](../preview/neck-mask-neutral.png)
+![首が襟の内側へ入り、手前の縁が下側を隠す正面](../preview/neck-collar-fit-neutral.png)
 
 傾き・上向きの手動ポーズ:
 
-![首と上半身の手動ポーズ確認](../preview/neck-mask-right-up.png)
+![首と襟の接続を傾き・上向きで確認](../preview/neck-collar-fit-right-up.png)
 
 会社PCでは軽いファイル保存・構文検査・動画読み取り・ブラウザ操作のみ実施しました。Python依存環境・モデル・ドライバ・配信プラグインのインストールやOS設定変更は行っていません。ブラウザ描画の負荷はゼロではありません。
 
