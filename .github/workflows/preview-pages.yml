@@ -22,6 +22,7 @@ jobs:
           python scripts/apply-rig-tuning.py --source upstream/lib/app.js --manifest patches/motion-v2.json
           node --check upstream/lib/app.js
           node tests/motion-profile.test.cjs upstream/lib/app.js upstream/lib/face-features.js
+          node tests/torso-motion.test.cjs upstream/lib/app.js
           npm --prefix upstream run test:node
           mkdir _site
           cp upstream/index.html upstream/LICENSE upstream/eye_close.psd upstream/mouth_close.psd upstream/sample.psd upstream/sample2.psd _site/

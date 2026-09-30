@@ -38,7 +38,7 @@ const animateSource = extract('function animate(now,dt){', '// ---------- render
 function response(fps, seconds) {
   const T = {angleX: 0, angleY: 0, angleZ: 0, body: 0, eyeOpenL: 1, eyeOpenR: 1, eyeX: 0, eyeY: 0, mouthOpen: 0, mouthForm: 0, brow: 0, physAmp: 2, soft: 2, fhAmp: 2, fhSoft: 0.4};
   const context = {
-    T, cur: {...T}, anchorMode: false, OBS_MODE: false,
+    T, cur: {...T}, bodyFollow: {yaw: 0, tilt: 0, pitch: 0}, anchorMode: false, OBS_MODE: false,
     auto: {cam: true}, cam: {live: true, ax: 0.6, ay: 0, az: 0, eL: 0, eR: 1, ex: 0, ey: 0, mo: 0.7},
     performance: {now: () => 3000}, lastTrackingAt: 3000,
     clamp: (value, low, high) => Math.max(low, Math.min(high, value)),
@@ -59,6 +59,8 @@ const at30 = response(30, 0.5), at60 = response(60, 0.5);
 for (const key of ['angleX', 'body', 'eyeOpenL', 'mouthOpen']) assert.ok(Math.abs(at30[key] - at60[key]) < 1e-8, key + 'は描画間隔に依存しない');
 assert.ok(at60.angleX > 0.58 && at60.angleX < 0.6);
 assert.ok(at60.eyeOpenL < 0.001 && at60.eyeOpenR === 1);
+assert.ok(at60.torsoYaw > 0 && at60.torsoYaw < at60.angleX, '胴体の左右向きが頭を遅れて追う');
+assert.ok(Math.abs(at30.torsoYaw - at60.torsoYaw) < 0.01, '描画間隔が違っても胴体の追従は近い');
 assert.ok(app.includes('const az=e.angleZ*0.14'));
 assert.ok(app.includes('e.angleX*(26+74*(dd-1))'));
 assert.ok(Number.isFinite(at60.swayBody) && Math.abs(at60.swayBody) <= 4);

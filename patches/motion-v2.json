@@ -4,15 +4,15 @@
   "replacements": [
     {
       "before": "const ab=e.body*0.028,cb=Math.cos(ab),sb=Math.sin(ab);",
-      "after": "const ab=e.body*0.075,cb=Math.cos(ab),sb=Math.sin(ab);"
+      "after": "// 胴体は末尾の腰・肩の変形で動かす。"
     },
     {
       "before": "let hw=isHead?1:(L.group==='body'?0.16:0);",
-      "after": "let hw=isHead?1:(L.group==='body'?0.35:0);"
+      "after": "let hw=isHead?1:0;"
     },
     {
       "before": "const bodyDX=e.body*0.028*(BP.cy-NP.cy)*0.35+e.angleX*14*0.16*FS;",
-      "after": "const bodyDX=e.body*0.075*(BP.cy-NP.cy)*0.35+e.angleX*26*0.35*FS;"
+      "after": "const bodyDX=((e.torsoTilt||0)*0.65*28+e.body*0.35*28+(e.torsoYaw||0)*22+(e.angleX-(e.torsoYaw||0))*10)*FS;"
     },
     {
       "before": "    tgt.body=clamp(tgt.body+cam.ax*0.25,-1,1);",
@@ -20,7 +20,7 @@
     },
     {
       "before": "  const remoteMicLive=OBS_MODE&&performance.now()-remoteMicAt<500;",
-      "after": "  // 首の傾きと顔の向きに肩・胴体を追従させる。\n  tgt.body=clamp(tgt.body+tgt.angleZ*0.55+tgt.angleX*0.20,-1,1);\n  const remoteMicLive=OBS_MODE&&performance.now()-remoteMicAt<500;"
+      "after": "  // 首の傾きは胴体の曲がりへ、左右向きは別の追従へ渡す。\n  tgt.body=clamp(tgt.body+tgt.angleZ*0.28,-1,1);\n  const remoteMicLive=OBS_MODE&&performance.now()-remoteMicAt<500;"
     },
     {
       "before": "for(const k in cur){tgt[k]=RT.clamp(tgt[k],...parameterRanges[k]);cur[k]+=(tgt[k]-cur[k])*kSmooth;}",
@@ -32,7 +32,7 @@
     },
     {
       "before": "if(bn==='neck')hw=0.55*smooth((A.neckBottom-y)/Math.max(1,A.neckBottom-A.neckTop));",
-      "after": "if(bn==='neck')hw=0.30+0.70*smooth((A.neckBottom-y)/Math.max(1,A.neckBottom-A.neckTop));"
+      "after": "if(bn==='neck')hw=smooth((A.neckBottom-y)/Math.max(1,A.neckBottom-A.neckTop));"
     },
     {
       "before": "      renderer.upload(L,{positions:L.cur,uvs:uv,indices:idx,image});",
@@ -121,6 +121,26 @@
     {
       "before": "  e.breathHead=0.5+0.5*Math.sin(t*2*Math.PI/3.4-0.6);",
       "after": "  e.breathHead=0.5+0.5*Math.sin(t*2*Math.PI/3.4-0.6);\n  e.swayBody=4*Math.sin(t*2*Math.PI/3.4);\n  e.swayHead=4.5*Math.sin(t*2*Math.PI/3.4-0.35);"
+    },
+    {
+      "before": "  // --- body rotation (around bottom center) ---\n  if(Math.abs(ab)>1e-4){\n    for(let k=0;k<n;k+=2){const rx=o[k]-BP.cx,ry=o[k+1]-BP.cy;o[k]=BP.cx+rx*cb-ry*sb;o[k+1]=BP.cy+rx*sb+ry*cb;}\n  }",
+      "after": "  // 腰を支点に曲がり、肩の高さと胴体の向きを別々に動かす。\n  const fh=Math.max(1,A.face.y1-A.face.y0),fw=Math.max(1,A.face.x1-A.face.x0);\n  const height=Math.max(1,Math.min(BP.cy-NP.cy,fh*2.2)),waist=NP.cy+height;\n  const yaw=e.torsoYaw||0,tilt=e.torsoTilt||0,pitch=e.torsoPitch||0;\n  const lean=tilt*0.65+e.body*0.35,turnLag=e.angleX-yaw,tiltLag=e.angleZ-tilt;\n  for(let k=0;k<n;k+=2){\n    const weight=smooth((waist-b[k+1])/height);\n    const shoulder=smooth((b[k+1]-NP.cy)/Math.max(1,fh*0.35));\n    const side=clamp((b[k]-NP.cx)/(fw*0.9),-1.3,1.3);\n    o[k]-=(o[k]-NP.cx)*yaw*yaw*0.07*weight*shoulder;\n    o[k]+=FS*weight*(lean*28+yaw*22+turnLag*10);\n    o[k+1]+=FS*weight*shoulder*(side*(lean*14+tiltLag*8+yaw*8)-pitch*10);\n  }"
+    },
+    {
+      "before": "const cur=Object.assign({},P);",
+      "after": "const cur=Object.assign({},P);\nconst bodyFollow={yaw:0,tilt:0,pitch:0};"
+    },
+    {
+      "before": "  const e=Object.assign({},cur);",
+      "after": "  bodyFollow.yaw+=(cur.angleX-bodyFollow.yaw)*(1-Math.exp(-dt*3.8));\n  bodyFollow.tilt+=(cur.angleZ-bodyFollow.tilt)*(1-Math.exp(-dt*3));\n  bodyFollow.pitch+=(cur.angleY-bodyFollow.pitch)*(1-Math.exp(-dt*3.5));\n  const e=Object.assign({},cur,{torsoYaw:bodyFollow.yaw,torsoTilt:bodyFollow.tilt,torsoPitch:bodyFollow.pitch});"
+    },
+    {
+      "before": "  activePreset=data.preset;highlightPresets();\n  Object.assign(cur,T);",
+      "after": "  activePreset=data.preset;highlightPresets();\n  Object.assign(cur,T);\n  Object.assign(bodyFollow,{yaw:cur.angleX,tilt:cur.angleZ,pitch:cur.angleY});"
+    },
+    {
+      "before": "    // --- head transform ---",
+      "after": "    // 左右を向いた頭の幅を少し圧縮し、既存の深度差と組み合わせる。\n    const headMix=bn==='neck'?smooth((A.neckBottom-b[k+1])/Math.max(1,A.neckBottom-A.neckTop)):isHead?1:0;\n    x=FC.x+(x-FC.x)*(1-e.angleX*e.angleX*0.08*headMix);\n    // --- head transform ---"
     }
   ]
 }
