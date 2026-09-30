@@ -1,0 +1,13 @@
+.venv*/
+vendor/
+output/
+models/
+data/models/
+__pycache__/
+*.pyc
+.env
+.env.*
+!.env.example
+*.log
+.ipynb_checkpoints/
+REPORT.md
