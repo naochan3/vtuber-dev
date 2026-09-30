@@ -29,4 +29,6 @@ if (-not (Test-Path -LiteralPath $environment)) {
 $pythonExe = Join-Path $environment 'Scripts/python.exe'
 & $pythonExe --version
 if ($LASTEXITCODE -ne 0) { throw '専用Python環境を起動できません。' }
+& $pythonExe (Join-Path $PSScriptRoot 'apply-rig-tuning.py') --source (Join-Path $checkout 'lib/app.js') --manifest (Join-Path $projectRoot 'patches/motion-v2.json')
+if ($LASTEXITCODE -ne 0) { throw '動きの調整に失敗しました。元のソースは保管されています。' }
 Write-Output '準備完了。start-anime25d.ps1を実行してください。'

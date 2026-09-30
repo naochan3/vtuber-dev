@@ -1,0 +1,34 @@
+{
+  "upstream_commit": "7ddbd9943ea3152561b3dc8348fd752c850f3e95",
+  "source_sha256": "1f8809447e5c64092b5edfb7cdc3b52a1bdb1b56e9ac2da29cdec8d18fdcc261",
+  "replacements": [
+    {
+      "before": "const ab=e.body*0.028,cb=Math.cos(ab),sb=Math.sin(ab);",
+      "after": "const ab=e.body*0.055,cb=Math.cos(ab),sb=Math.sin(ab);"
+    },
+    {
+      "before": "let hw=isHead?1:(L.group==='body'?0.16:0);",
+      "after": "let hw=isHead?1:(L.group==='body'?0.30:0);"
+    },
+    {
+      "before": "const bodyDX=e.body*0.028*(BP.cy-NP.cy)*0.35+e.angleX*14*0.16*FS;",
+      "after": "const bodyDX=e.body*0.055*(BP.cy-NP.cy)*0.35+e.angleX*14*0.30*FS;"
+    },
+    {
+      "before": "    tgt.body=clamp(tgt.body+cam.ax*0.25,-1,1);",
+      "after": "    // 上半身の追従は共通処理で行う。"
+    },
+    {
+      "before": "  const remoteMicLive=OBS_MODE&&performance.now()-remoteMicAt<500;",
+      "after": "  // 首の傾きと顔の向きに肩・胴体を追従させる。\n  tgt.body=clamp(tgt.body+tgt.angleZ*0.55+tgt.angleX*0.20,-1,1);\n  const remoteMicLive=OBS_MODE&&performance.now()-remoteMicAt<500;"
+    },
+    {
+      "before": "for(const k in cur){tgt[k]=RT.clamp(tgt[k],...parameterRanges[k]);cur[k]+=(tgt[k]-cur[k])*kSmooth;}",
+      "after": "for(const k in cur){tgt[k]=RT.clamp(tgt[k],...parameterRanges[k]);const kFollow=k==='body'?1-Math.exp(-dt*5):kSmooth;cur[k]+=(tgt[k]-cur[k])*kFollow;}"
+    },
+    {
+      "before": "mouthGain:[0.5,2.5,1]",
+      "after": "mouthGain:[0.5,2.5,1.4]"
+    }
+  ]
+}
