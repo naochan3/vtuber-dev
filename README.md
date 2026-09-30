@@ -5,7 +5,8 @@
 ## まず動きを見る
 
 - [改良版のブラウザプレビュー](https://naochan3.github.io/vtuber-dev/?preview=2): 女性キャラを自動読み込み。小さな頭の動きの増幅・顔の可動幅・なめらかな追従・左右独立のウィンクを調整済みです。
-- [最新の動作サンプル](preview/body-hair-v4.webm): 首の傾き・左右向き・肩と胸の曲がり・髪の慣性を手動操作で確認。カメラ・マイクなしです。
+- [上半身・髪の動作サンプル v4](preview/body-hair-v4.webm): 首の傾き・左右向き・肩と胸の曲がり・髪の慣性を手動操作で確認。カメラ・マイクなし、眉・うなずきのv5調整前です。
+- [眉・上下向きの確認画面 v5](preview/tracking-v5.png): 手動入力による表示の証跡です。本人のカメラ検証とは分けています。
 - [旧v3の5秒サンプル](preview/motion-v3.webm): 可動幅・呼吸改良後、一律の体回転が残っていた比較動画です。
 - [首と襟の接続修正時点](preview/speaking-collar-fit.webm): 今回の可動幅・呼吸改良前の比較動画です。
 - [水平マスク時点の比較動画](preview/speaking-neck-mask.webm): 首が浮いて見える問題が残っていた旧版です。
@@ -16,6 +17,8 @@
 ## 進め方
 
 別PCで再開する場合は [開発引継ぎ](docs/handoff.md) を最初に読んでください。[調整ナレッジ](docs/knowledge.md) に原因・調整箇所・再発時の確認方法を、[検証記録](docs/validation-2026-09-30.md) に証跡と未検証事項を保存しています。
+
+[OBS・TikTok接続とPCの目安](docs/streaming-and-pc.md) に、最新PSD・設定・動作コードの組合せをまとめています。2026-10-01版は眉の表示幅を2倍にし、顔追跡の奥行きからうなずきを取得します。更新後はカメラをオンにして「正面を記録」を取り直してください。素材名は `base-speaking-v2` のままですが、両方の調整ファイルを適用するセットアップが最新です。
 
 1. ColabでSee-throughを使い、透過立ち絵からレイヤーPSDを作る。
 2. 自宅Windows PCでAnime2.5DRigを起動し、PSDを読み込んで顔・目・口の割り当てを確認する。
@@ -41,7 +44,7 @@
 ./scripts/start-anime25d.ps1
 ```
 
-ブラウザで `http://127.0.0.1:8000/` を開き、`avatars/base-speaking-v2.psd` と `avatars/base-speaking-v2.rig.json` を読み込みます。セットアップは固定版のビューアに `patches/motion-v2.json` の調整を適用し、元の `app.js` を保管します。既存の別変更は上書きしません。カメラ・マイクは必要なときに許可します。
+ブラウザで `http://127.0.0.1:8000/` を開き、`avatars/base-speaking-v2.psd` と `avatars/base-speaking-v2.rig.json` を読み込みます。セットアップは固定版に `patches/motion-v2.json` と `patches/face-tracking-v5.json` を適用し、元ソースを保管します。既存の別変更は上書きしません。旧セットアップから更新する場合は、新規フォルダへ最新版を展開してください。カメラ・マイクは必要なときに許可します。
 
 OBSにブラウザソースを追加し、URLを `http://127.0.0.1:8000/?obs=1` にします。取り込みを確認してからOBS仮想カメラを開始し、TikTok LIVE Studio側で選択します。
 
