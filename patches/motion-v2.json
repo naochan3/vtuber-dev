@@ -39,8 +39,40 @@
       "after": "if(bn==='neck')hw=0.30+0.70*smooth((A.neckBottom-y)/Math.max(1,A.neckBottom-A.neckTop));"
     },
     {
-      "before": "    // --- local features ---",
-      "after": "    // このキャラは襟が顎まで重なるため、襟元だけを下げて首を見せる。\n    if(bn==='topwear'&&modelId==='a6068e-293dc8a5-5f5ed455'){\n      const collarY=smooth((A.neckBottom-y)/Math.max(1,A.neckBottom-L.y));\n      const collarX=1-smooth(Math.abs(x-NP.cx)/Math.max(1,(A.face.x1-A.face.x0)*0.38));\n      y+=40*FS*collarX*collarY;\n    }\n    // --- local features ---"
+      "before": "      renderer.upload(L,{positions:L.cur,uvs:uv,indices:idx,image});",
+      "after": "      renderer.upload(L,{positions:L.cur,uvs:uv,indices:idx,image});\n      if(targetId==='a6068e-293dc8a5-5f5ed455'&&L.bn==='neck'){\n        const wear=rig.layers.find(part=>part.name==='topwear');\n        if(!wear)throw new Error('首マスクの基準となる衣装がありません');\n        // 上側だけを衣装より手前へ描き、下側は元の背面描画に残す。\n        const data=new Uint8ClampedArray(Lr.img.data),edge=wear.y+24;\n        for(let y=0;y<image.height;y++){\n          const mask=1-smooth((L.y+y-(edge-2))/2);\n          for(let x=0;x<image.width;x++)data[(y*image.width+x)*4+3]*=mask;\n        }\n        L.neckFront=Object.assign({},L);\n        renderer.upload(L.neckFront,{positions:L.cur,uvs:uv,indices:idx,image:new ImageData(data,image.width,image.height)});\n      }"
+    },
+    {
+      "before": "function prepareLayers(rig){",
+      "after": "function prepareLayers(rig,targetId){"
+    },
+    {
+      "before": "function applyRig(rig){",
+      "after": "function applyRig(rig,targetId=modelId){"
+    },
+    {
+      "before": "const prepared=prepareLayers(rig);",
+      "after": "const prepared=prepareLayers(rig,targetId);"
+    },
+    {
+      "before": "applyRig(parsed.rig);",
+      "after": "applyRig(parsed.rig,parsed.id||'');"
+    },
+    {
+      "before": "prepared.forEach(renderer.dispose);",
+      "after": "prepared.forEach(L=>{if(L.neckFront)renderer.dispose(L.neckFront);renderer.dispose(L);});"
+    },
+    {
+      "before": "layers.forEach(renderer.dispose);layers=prepared;currentRig=rig;",
+      "after": "layers.forEach(L=>{if(L.neckFront)renderer.dispose(L.neckFront);renderer.dispose(L);});layers=prepared;currentRig=rig;"
+    },
+    {
+      "before": "  const items=[],masks=[];",
+      "after": "  const items=[],masks=[],neck=layers.find(L=>L.neckFront);"
+    },
+    {
+      "before": "    if(alpha>=0.004)items.push({L,alpha,clip:L.bn==='irides'&&L.side?L.side:null});",
+      "after": "    if(alpha>=0.004)items.push({L,alpha,clip:L.bn==='irides'&&L.side?L.side:null});\n    if(L.bn==='topwear'&&neck&&neck.visible&&neck.opacity>=0.004){\n      renderer.positions(neck.neckFront,neck.cur);\n      items.push({L:neck.neckFront,alpha:neck.opacity,clip:null});\n    }"
     }
   ]
 }
