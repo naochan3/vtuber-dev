@@ -11,6 +11,7 @@
 | `preview/speaking-v2.webm` | VP9、1280×1280、108フレーム、最終時刻4.705秒。カメラ・マイクなし |
 | `preview/speaking-neck-mask.webm` | 水平マスク時点の旧版。首が浮いて見える問題が残る。VP9、1280×1280、103フレーム、最終時刻4.663秒 |
 | `preview/speaking-collar-fit.webm` | 襟への接続修正後。VP9、1280×1280、125フレーム、最終時刻4.957秒。カメラ・マイクなし |
+| `preview/motion-v3.webm` | 最新の可動幅・横揺れ・呼吸改良後。VP9、1280×1280、146フレーム、最終時刻4.931秒。カメラ・マイクなし |
 
 SHA256:
 
@@ -25,9 +26,27 @@ preview/speaking-neck-mask.webm
 d3d39eb7fac1ca9421196500fd778d1252be058181f0ebca4aa574de8a9bbe5b
 preview/speaking-collar-fit.webm
 1e8224db53e81bf0d89a5847e01acbd8aeec0efbebff74af7c09d1432270ec68
+preview/motion-v3.webm
+97c6807a08065025465b13201aa4571b611a332f9dc1a203c063c441793c3d29
 ```
 
 ## 合格・観察済み
+
+- [最新の追従・横揺れ・呼吸修正](https://github.com/naochan3/vtuber-dev/commit/f0191cb28c56465799e2c730711f41456fac1065) の [Actions](https://github.com/naochan3/vtuber-dev/actions/runs/36726749153) で独自の追従検査・公式Nodeテスト・Pages公開が成功。
+- `tests/motion-profile.test.cjs`: 固定版FaceFeaturesに合成した顔の測定値を渡し、左右別のウィンクで反対の目が開いたまま、頭感度1.6による小さな角度の増幅を確認。描画側の合成カメラ入力で急な向き変更の平滑化、30/60fpsの間隔で同じ経過時間後の応答一致、目・口の速い反応を確認。
+- 既存の標準設定だけを新しい頭感度・平滑化へ移行し、正面の記録と独自の感度を保持する検査に合格。一度移行後に目の連動をオンへ戻した操作も保持。
+- 公開画面で頭感度1.6・なめらかさ0.65・目の連動オフを確認。左右のウィンク表示、X/Z=`±0.35/±0.4`、広いX/Y/Z=`±0.9/±0.6/±0.9`の手動ポーズを確認。首が手前の襟に隠れる接続を保持。実カメラのウィンク検出成功の証跡とはしない。
+- 呼吸周期と連動した頭・体の横揺れが有限かつ範囲内で、位相差があることを合成入力で確認。呼吸は自動演出で、本人の呼吸を測定していない。
+
+左右独立の目と、小さな手動角度の表示:
+
+![左ウィンク](../preview/motion-v3-wink-left.png)
+![右ウィンク](../preview/motion-v3-wink-right.png)
+
+広げた可動幅の手動確認:
+
+![広い左向き](../preview/motion-v3-wide-left.png)
+![広い右向き](../preview/motion-v3-wide-right.png)
 
 - Colab L4 / Python 3.12でSee-throughによる初版PSD生成成功。741.05秒は初回ダウンロード・20秒間隔の完了確認を含む。
 - 左右12パーツの名前変換前後で合成画像が同一。
@@ -58,6 +77,7 @@ preview/speaking-collar-fit.webm
 
 - 自宅RTX 4070でのFPS、VRAM、RAM、長時間の安定性。
 - 実カメラ追従の性能、強い上下動に対する首・襟・髪の破綻。
+- 今回の平滑化と感度の変更後、本人の小さな動き・左右ウィンクの検出率・体感遅延・実カメラのカクつきの残り方。処理FPSを改善したとの実測はない。
 - 発声と口の同期、カメラ口パクとマイク口パクの競合。
 - OBS・TikTok LIVE Studioの透過出力と配信プレビュー。
 - 統合したColabノートブック全体の新規ランタイムからの再実行。

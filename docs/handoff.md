@@ -61,6 +61,7 @@ Pagesを自分のフォークで公開する場合は、フォーク側でAction
 | `avatars/base-speaking-v2.psd` / `.rig.json` | 現在の配布基準。専用の開き口を追加した21レイヤー |
 | `assets/expressions/` | 開き口素材と生成プロンプト |
 | `patches/motion-v2.json` | 固定版ビューアに対する最小の動作調整 |
+| `tests/motion-profile.test.cjs` | 左右独立の目・小さな動きの増幅・追従時間・既存設定移行の合成入力テスト |
 | `scripts/apply-rig-tuning.py` | ソース照合・調整・元ソース保管。標準ライブラリのみ |
 | `scripts/add-speaking-mouth.py` | 元PSDへ生成した口を配置。画像の描き直しはしない |
 | `scripts/setup-anime25d.ps1` | 自宅用の固定版取得・専用環境作成・調整適用 |
@@ -80,6 +81,10 @@ Pagesを自分のフォークで公開する場合は、フォーク側でAction
 PSDを再生成すると、同じファイル名でも内部IDが変わる場合があります。PSDをビューアで開き、割り当て確認後に設定JSONを再書き出しして同じ版として保存してください。
 
 襟の前後マスクはv2のmodelIdに限定しています。PSDを再生成すると外れる場合があるため、新しいIDへ適用すべきか見た目で判断し、manifestを更新してください。マスクは金色の襟の縁に沿って列ごとに境界を検出します。色の判定と探索範囲は [調整ナレッジ](knowledge.md) を参照してください。旧版の水平マスクへ戻すと、首が浮いて見える問題が再発します。
+
+現在は追従改良も同じmanifestへ含めています。頭感度1.6、平滑化0.65、左右目の連動オフが標準です。旧標準値と目の連動はブラウザ内で一度だけ移行し、独自の感度・正面の記録は保持します。これらのブラウザ設定はPSD用JSONには含まれないため、コードごと移動してください。ファイル名のv2はPSD世代で、追従設定の世代とは別です。
+
+固定版取得・適用後、`node tests/motion-profile.test.cjs vendor/Anime2.5DRig/lib/app.js vendor/Anime2.5DRig/lib/face-features.js` で合成入力の検査を実行できます。GitHub Actionsでも公式Nodeテストと併せて実行します。実カメラでは普通の小さな動きと左右のウィンクを別途確認してください。
 
 ## 次に行う検証と優先順位
 
