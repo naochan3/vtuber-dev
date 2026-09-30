@@ -17,7 +17,7 @@ def prepare(source: Path, destination: Path, head_box: tuple[int, int, int, int]
     left, top, right, bottom = head_box
     if not (0 <= left < right <= image.width and 0 <= top < bottom <= image.height):
         raise ValueError("頭部の範囲が入力画像の中に収まっていません")
-    if image.getchannel("A").getextrema()[0] != 0:
+    if image.getchannel("A").histogram()[0] == 0:
         raise ValueError("背景が透明になっていません")
     scale = 128 / max(right - left, bottom - top)
     dimensions = (round(image.width * scale), round(image.height * scale))
