@@ -29,6 +29,15 @@ jobs:
           cp upstream/index.html upstream/LICENSE upstream/eye_close.psd upstream/mouth_close.psd upstream/sample.psd upstream/sample2.psd _site/
           cp -R upstream/lib _site/lib
           cp -R avatars _site/avatars
+          python - <<'PY'
+          import os
+          from pathlib import Path
+          page = Path('_site/index.html')
+          source = page.read_text(encoding='utf-8')
+          old = 'src="lib/app.js"'
+          assert source.count(old) == 1
+          page.write_text(source.replace(old, 'src="lib/app.js?revision=' + os.environ['GITHUB_SHA'] + '"'), encoding='utf-8')
+          PY
           test -f _site/avatars/base-speaking-v2.psd
           test -f _site/avatars/base-speaking-v2.rig.json
           touch _site/.nojekyll
