@@ -4,7 +4,7 @@
   "replacements": [
     {
       "before": "const ab=e.body*0.028,cb=Math.cos(ab),sb=Math.sin(ab);",
-      "after": "const ab=e.body*0.065,cb=Math.cos(ab),sb=Math.sin(ab);"
+      "after": "const ab=e.body*0.075,cb=Math.cos(ab),sb=Math.sin(ab);"
     },
     {
       "before": "let hw=isHead?1:(L.group==='body'?0.16:0);",
@@ -12,7 +12,7 @@
     },
     {
       "before": "const bodyDX=e.body*0.028*(BP.cy-NP.cy)*0.35+e.angleX*14*0.16*FS;",
-      "after": "const bodyDX=e.body*0.065*(BP.cy-NP.cy)*0.35+e.angleX*22*0.35*FS;"
+      "after": "const bodyDX=e.body*0.075*(BP.cy-NP.cy)*0.35+e.angleX*26*0.35*FS;"
     },
     {
       "before": "    tgt.body=clamp(tgt.body+cam.ax*0.25,-1,1);",
@@ -76,15 +76,15 @@
     },
     {
       "before": "const az=e.angleZ*0.07,cz=Math.cos(az),sz=Math.sin(az);",
-      "after": "const az=e.angleZ*0.12,cz=Math.cos(az),sz=Math.sin(az);"
+      "after": "const az=e.angleZ*0.14,cz=Math.cos(az),sz=Math.sin(az);"
     },
     {
       "before": "const headDX=(e.angleX*14+e.angleZ*0.07*(NP.cy-FC.y))*FS;",
-      "after": "const headDX=(e.angleX*22+e.angleZ*0.12*(NP.cy-FC.y))*FS;"
+      "after": "const headDX=(e.angleX*26+e.angleZ*0.14*(NP.cy-FC.y))*FS;"
     },
     {
       "before": "x+=hw*FS*(e.angleX*(14+40*(dd-1))+e.angleX*(NP.cy-y)*0.028);",
-      "after": "x+=hw*FS*(e.angleX*(22+63*(dd-1))+e.angleX*(NP.cy-y)*0.044);"
+      "after": "x+=hw*FS*(e.angleX*(26+74*(dd-1))+e.angleX*(NP.cy-y)*0.052);"
     },
     {
       "before": "y+=hw*FS*(-e.angleY*(9+30*(dd-1))-e.angleY*(dd-1)*(y-FC.y)*0.05);",
@@ -105,6 +105,22 @@
     {
       "before": "const prefSliders={prefHeadGain:'headGain'",
       "after": "// 以前のブラウザ設定にも一度だけ新しい追従設定を反映する。\nfunction upgradeMotionPrefs(value){\n  if(value.motionProfile===3)return false;\n  if(value.headGain===1)value.headGain=1.6;\n  if(value.smoothing===0.5)value.smoothing=0.65;\n  value.linkEyes=false;value.motionProfile=3;return true;\n}\nif(upgradeMotionPrefs(prefs))savePrefs();\nconst prefSliders={prefHeadGain:'headGain'"
+    },
+    {
+      "before": "  const kind=L.phys==='sway'?'acc':FRONTISH[bn]?'fh':'bh';",
+      "after": "  const kind=L.phys==='sway'?'acc':FRONTISH[bn]?'fh':'bh';\n  const swayBody=e.swayBody||0,swayHead=e.swayHead||0;"
+    },
+    {
+      "before": "    y-=(L.group==='body'?e.breath*2.0:e.breathHead*1.6)*FS;",
+      "after": "    y-=(L.group==='body'?e.breath*3.5:e.breathHead*2.8)*FS;\n    // 呼吸の横揺れを肩と頭へ渡し、首の両端をつなげる。\n    const neckMix=smooth((A.neckBottom-b[k+1])/Math.max(1,A.neckBottom-A.neckTop));\n    const sway=bn==='neck'?swayBody+(swayHead-swayBody)*neckMix:L.group==='head'?swayHead:L.group==='body'?swayBody:0;\n    x+=sway*FS;"
+    },
+    {
+      "before": "if(bn==='topwear'&&y<CHEST.cy)y-=e.breath*2.2*FS",
+      "after": "if(bn==='topwear'&&y<CHEST.cy)y-=e.breath*3.0*FS"
+    },
+    {
+      "before": "  e.breathHead=0.5+0.5*Math.sin(t*2*Math.PI/3.4-0.6);",
+      "after": "  e.breathHead=0.5+0.5*Math.sin(t*2*Math.PI/3.4-0.6);\n  e.swayBody=4*Math.sin(t*2*Math.PI/3.4);\n  e.swayHead=4.5*Math.sin(t*2*Math.PI/3.4-0.35);"
     }
   ]
 }
