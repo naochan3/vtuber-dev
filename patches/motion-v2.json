@@ -68,7 +68,11 @@
     },
     {
       "before": "  const items=[],masks=[];",
-      "after": "  const items=[],masks=[],neck=layers.find(L=>L.bn==='neck');"
+      "after": "  const items=[],masks=[],neck=layers.find(L=>L.bn==='neck'),collar=layers.find(L=>L.neckCover);\n  if(collar&&neck){deform(neck,e);renderer.positions(neck,neck.cur);}"
+    },
+    {
+      "before": "  for(const L of layers){\n    const isMask=L.bn==='eyewhite'&&!!L.side;",
+      "after": "  for(const L of layers){\n    if(collar&&L===neck)continue; // 首は襟の背面と前面の間で一度だけ描く。\n    const isMask=L.bn==='eyewhite'&&!!L.side;"
     },
     {
       "before": "    if(alpha>=0.004)items.push({L,alpha,clip:L.bn==='irides'&&L.side?L.side:null});",
