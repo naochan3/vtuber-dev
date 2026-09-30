@@ -62,6 +62,8 @@ Pagesを自分のフォークで公開する場合は、フォーク側でAction
 | `assets/expressions/` | 開き口素材と生成プロンプト |
 | `patches/motion-v2.json` | 固定版ビューアに対する最小の動作調整 |
 | `tests/motion-profile.test.cjs` | 左右独立の目・小さな動きの増幅・追従時間・既存設定移行の合成入力テスト |
+| `tests/torso-motion.test.cjs` | 肩・胸・腰の変形、左右向き、垂れ布のマスク範囲の検査 |
+| `tests/eye-hair-motion.test.cjs` | 瞳の再開眼、毛束ごとの応答差、停止後の収束の検査 |
 | `scripts/apply-rig-tuning.py` | ソース照合・調整・元ソース保管。標準ライブラリのみ |
 | `scripts/add-speaking-mouth.py` | 元PSDへ生成した口を配置。画像の描き直しはしない |
 | `scripts/setup-anime25d.ps1` | 自宅用の固定版取得・専用環境作成・調整適用 |
@@ -87,6 +89,15 @@ PSDを再生成すると、同じファイル名でも内部IDが変わる場合
 固定版取得・適用後、`node tests/motion-profile.test.cjs vendor/Anime2.5DRig/lib/app.js vendor/Anime2.5DRig/lib/face-features.js` で合成入力の検査を実行できます。GitHub Actionsでも公式Nodeテストと併せて実行します。実カメラでは普通の小さな動きと左右のウィンクを別途確認してください。
 
 ## 次に行う検証と優先順位
+
+現行は体の一律回転を除去し、肩と胸を別々に曲げ、胴体が頭を遅れて追う方式です。再開眼時の瞳の伸縮も除去し、髪のばねは前後と毛束の長さ・位置で分けました。両脇の垂れ布だけを腕より奥へ分けるマスクを追加しています。前身頃全体を奥へ動かすと袖の補完画素が胸に重なるため、その順番変更は採用しません。
+
+固定版へ適用した後は以下も実行します。実カメラの成功を保証するテストではありません。
+
+```powershell
+node tests/torso-motion.test.cjs vendor/Anime2.5DRig/lib/app.js
+node tests/eye-hair-motion.test.cjs vendor/Anime2.5DRig/lib/app.js vendor/Anime2.5DRig/lib/runtime.js
+```
 
 1. 自宅の実カメラで正面・左右・上下・首の傾きを確認。襟と首の境界、髪、耳の破綻を録画する。
 2. 実際に話して口の開閉を確認。カメラ口パクとマイク口パクを比較し、感度・閉じやすさを調整して新しいJSONへ保存する。

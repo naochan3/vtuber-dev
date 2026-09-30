@@ -73,6 +73,29 @@ preview/motion-v3.webm
 
 会社PCでは軽いファイル保存・構文検査・動画読み取り・ブラウザ操作のみ実施しました。Python依存環境・モデル・ドライバ・配信プラグインのインストールやOS設定変更は行っていません。ブラウザ描画の負荷はゼロではありません。
 
+## 追加検証: 肩・胸の曲がり、瞳、毛束、垂れ布（2026-10-01）
+
+- [動作修正](https://github.com/naochan3/vtuber-dev/commit/ecf8bc19bfc3f5f49ef18287c3f59881d3d20a2f) の [Actions](https://github.com/naochan3/vtuber-dev/actions/runs/36736103396)、[垂れ布の分離](https://github.com/naochan3/vtuber-dev/commit/91b1529c8e2f2e25135f9f65050f816d5fb37655) の [Actions](https://github.com/naochan3/vtuber-dev/actions/runs/36737001319) が成功。独自3種類の検査、公式Nodeテスト、Pages公開を通過。
+- 全パーツの一律回転を除去。実際の変形関数へ合成点を渡し、肩と胸の変位差・腰側の保持・左右向きの対称性・頭幅の圧縮・最大入力でメッシュが裏返らないことを確認。
+- 開眼後0.52秒の瞳の伸縮演出を除去。閉眼→再開眼を実際のanimateで再生し、瞳の追加倍率が常に1であることを確認。驚きは手動プリセットで、カメラの自動判定ではない。実カメラ中の違和感の原因をすべて確定したわけではない。
+- 実際のばね処理と公式runtimeへ合成した頭の左右・上下・傾き入力を渡し、前・横・後ろ髪の応答差、停止後の収束、繰り返す跳ね返りがないことを確認。30/60fpsの描画間隔での近さも検査。
+- 元絵と分解素材を確認。両脇の紫色の垂れ布はtopwearに含まれ、袖より手前だった。衣装全体を奥へ置く試案では袖の内側の補完画素が胸を覆うため不採用。専用マスクで垂れ布だけを分離し、袖の背面へ描画。
+- 公開画面で正面、Z=+0.6、X=±0.6（Z=0）、腕の高さ=+0.6、左右ウィンクを確認。前身頃・襟・首の接続を保持し、垂れ布が袖の奥へ入る表示を確認。
+- 公式サンプルAへ切り替え、v2のPSDとJSONを再読込し、口・襟・垂れ布の表示が復元。ブラウザerror/warnなし。GPUメモリ量は未計測。
+- ブラウザの古いコードが残る問題に備え、[読込URLの版付け](https://github.com/naochan3/vtuber-dev/commit/52c4f55b19e88fcea1f64e4c45d2d09fa82ffc7b) を追加。[Actions](https://github.com/naochan3/vtuber-dev/actions/runs/36737529499) 成功後、画面のscript要素がこの版のURLを参照していることを確認して証跡を取り直した。
+- [現行動画](../preview/body-hair-v4.webm): カメラ・マイクなしの手動操作。首の傾き、左右向き、停止後の髪、左ウィンク。2本の1280×1280録画を結合・640×640へ縮小し、VP9・透過情報あり・887フレーム・29.968秒・2,484,097bytes。SHA256 `de0020f144d209261dfdfec419367ea562beac4c01fb932c1aecda2d0abcd5c2`。FFmpegで全フレームをデコードし、抽出画面を確認。
+- 元PSDのSHA256は従来と一致。ソフト導入・OS設定変更・モデル追加・会社のGitHub認証変更・Colab GPU追加処理は実施していない。
+
+正面での袖と布の前後関係:
+
+![紫色の布を袖の奥へ分離](../preview/body-v4-neutral.png)
+
+傾きと左右向き（カメラなし）:
+
+![首の傾き](../preview/body-v4-tilt.png)
+![左右向き](../preview/body-v4-yaw-left.png)
+![腕を上げた前後関係](../preview/body-v4-arm-depth.png)
+
 ## 未確認・次の実機検証
 
 - 自宅RTX 4070でのFPS、VRAM、RAM、長時間の安定性。
