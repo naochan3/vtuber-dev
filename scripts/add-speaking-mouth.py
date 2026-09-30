@@ -29,8 +29,10 @@ def assemble(source: Path, sprite_path: Path, destination: Path) -> None:
     with Image.open(sprite_path) as image:
         sprite = image.convert("RGBA")
     alpha = sprite.getchannel("A")
-    bounds = alpha.getbbox()
-    if bounds is None or alpha.getextrema()[0] != 0:
+    # ほぼ透明な余白を寸法に含めず、実際の口の輪郭を基準に配置する。
+    bounds = Image.frombytes("L", alpha.size,
+                             bytes(255 if value > 16 else 0 for value in alpha.tobytes())).getbbox()
+    if bounds is None or min(alpha.tobytes()) != 0:
         raise ValueError("透過した開き口素材が必要です")
     # 素材の描画はimagegenで実施済み。ここではPSDへの配置だけを行う。
     sprite = sprite.crop(bounds).resize((60, 30), Image.Resampling.LANCZOS)

@@ -29,6 +29,14 @@
     {
       "before": "mouthGain:[0.5,2.5,1]",
       "after": "mouthGain:[0.5,2.5,1.4]"
+    },
+    {
+      "before": "  sync.startPolling();\n  if(CAMERA_MODE)setAuto('cam',true);",
+      "after": "  sync.startPolling();\n  if(QUERY.get('preview')==='2'){\n    (async()=>{\n      await loadModel(fetchSource('avatars/base-speaking-v2.psd'),'base-speaking-v2.psd');\n      const response=await fetch('avatars/base-speaking-v2.rig.json');\n      if(!response.ok)throw new Error('改良キャラの設定を読み込めません');\n      applySettings(await response.json());\n      status('口パク・首と上半身の追従を改良したプレビューです');\n    })().catch(err=>status(err.message,true));\n  }\n  if(CAMERA_MODE)setAuto('cam',true);"
+    },
+    {
+      "before": "if(bn==='neck')hw=0.55*smooth((A.neckBottom-y)/Math.max(1,A.neckBottom-A.neckTop));",
+      "after": "if(bn==='neck')hw=0.30+0.70*smooth((A.neckBottom-y)/Math.max(1,A.neckBottom-A.neckTop));"
     }
   ]
 }

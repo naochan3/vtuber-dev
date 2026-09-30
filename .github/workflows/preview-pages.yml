@@ -1,0 +1,46 @@
+name: 改良アバターのブラウザプレビュー
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: pages
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: 固定版の公式ビューアを取得
+        run: |
+          git clone --no-checkout https://github.com/852wa/Anime2.5DRig.git upstream
+          git -C upstream checkout 7ddbd9943ea3152561b3dc8348fd752c850f3e95
+      - name: 調整を適用して公開用ファイルを組み立て
+        run: |
+          python scripts/apply-rig-tuning.py --source upstream/lib/app.js --manifest patches/motion-v2.json
+          node --check upstream/lib/app.js
+          mkdir _site
+          cp upstream/index.html upstream/LICENSE upstream/eye_close.psd upstream/mouth_close.psd upstream/sample.psd upstream/sample2.psd _site/
+          cp -R upstream/lib _site/lib
+          cp -R avatars _site/avatars
+          test -f _site/avatars/base-speaking-v2.psd
+          test -f _site/avatars/base-speaking-v2.rig.json
+          touch _site/.nojekyll
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: GitHub Pagesに公開
+        id: deployment
+        uses: actions/deploy-pages@v4
