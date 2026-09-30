@@ -141,6 +141,46 @@
     {
       "before": "    // --- head transform ---",
       "after": "    // 左右を向いた頭の幅を少し圧縮し、既存の深度差と組み合わせる。\n    const headMix=bn==='neck'?smooth((A.neckBottom-b[k+1])/Math.max(1,A.neckBottom-A.neckTop)):isHead?1:0;\n    x=FC.x+(x-FC.x)*(1-e.angleX*e.angleX*0.08*headMix);\n    // --- head transform ---"
+    },
+    {
+      "before": "lastFrame=null;blinkT=-1;blinkVariant=1;irisBounceT=-1;",
+      "after": "lastFrame=null;blinkT=-1;blinkVariant=1;"
+    },
+    {
+      "before": "if(key==='blink'&&!value){blinkT=-1;blinkVariant=1;irisBounceT=-1;}",
+      "after": "if(key==='blink'&&!value){blinkT=-1;blinkVariant=1;}"
+    },
+    {
+      "before": "let blinkT=-1,blinkVariant=1,blinkBounceStarted=false,irisBounceT=-1,nextBlink=",
+      "after": "let blinkT=-1,blinkVariant=1,nextBlink="
+    },
+    {
+      "before": "blinkT=0;blinkBounceStarted=false;blinkVariant=",
+      "after": "blinkT=0;blinkVariant="
+    },
+    {
+      "before": "        if(!blinkBounceStarted&&v>0.12){blinkBounceStarted=true;irisBounceT=0;}\n",
+      "after": ""
+    },
+    {
+      "before": "  if(irisBounceT>=0){irisBounceT+=dt;if(irisBounceT>0.52)irisBounceT=-1;}\n",
+      "after": ""
+    },
+    {
+      "before": "  if(irisBounceT>=0){\n    const p=irisBounceT/0.52,damp=Math.exp(-2.2*p);\n    const scale=1+0.18*Math.sin(p*Math.PI*4.0)*damp,squash=0.10*Math.sin(p*Math.PI*4.0+Math.PI/2)*damp;\n    e.irisBounceX=scale*(1+squash);e.irisBounceY=scale*(1-squash);\n  }\n",
+      "after": ""
+    },
+    {
+      "before": "soft:{x:0,v:0,dx:0},phase:i*1.37+L.z",
+      "after": "soft:{x:0,v:0,dx:0},vertical:{x:0,v:0,dy:0},phase:i*1.37+L.z"
+    },
+    {
+      "before": "      x+=dx*amp;y+=Math.abs(dx)*amp*0.12;",
+      "after": "      x+=dx*amp;\n      if(kind==='acc')y+=Math.abs(dx)*amp*0.12;\n      else{let dy=0;for(let s=0;s<nS;s++)dy+=L.sw[vi*nS+s]*L.spr[s].vertical.dy;y+=dy*amp;}"
+    },
+    {
+      "before": "    const base=L.group==='head'?headDX:bodyDX,windScale=L.phys==='sway'&&L.group!=='head'?2.5:1;\n    for(const sp of L.spr){\n      const w=wind?(1.8*Math.sin(t*0.8+sp.phase)+1.0*Math.sin(t*1.9+sp.phase*2.3))*windScale:0;\n      const txv=base+w*FS;\n      RT.spring(sp.stiff,txv,70,9,dt);sp.stiff.dx=-(sp.stiff.x-txv)*2.2;\n      RT.spring(sp.soft,txv,16,1.3,dt);sp.soft.dx=-(sp.soft.x-txv)*3.0;\n    }",
+      "after": "    const hair=L.bn==='front hair'||L.bn==='side hair'||L.bn==='back hair'||L.bn==='ahoge';\n    const base=L.group==='head'?headDX:bodyDX,windScale=L.phys==='sway'&&L.group!=='head'?2.5:1;\n    for(let index=0;index<L.spr.length;index++){\n      const sp=L.spr[index];\n      const w=wind?(1.8*Math.sin(t*0.8+sp.phase)+1.0*Math.sin(t*1.9+sp.phase*2.3))*windScale:0;\n      if(!hair){\n        const txv=base+w*FS;\n        RT.spring(sp.stiff,txv,70,9,dt);sp.stiff.dx=-(sp.stiff.x-txv)*2.2;\n        RT.spring(sp.soft,txv,16,1.3,dt);sp.soft.dx=-(sp.soft.x-txv)*3.0;\n        continue;\n      }\n      // 毛束の長さ・根元位置・前後で反応を変え、跳ね返りを強く減衰する。\n      const strand=L.strands[index],front=L.bn==='front hair',side=L.bn==='side hair';\n      const length=clamp((strand.tipY-strand.rootY)/FS,35,500);\n      const stiffness=(front?155:side?105:80)/(0.7+length/350);\n      const az=e.angleZ*0.14,rx=strand.x-NP.cx,ry=strand.rootY-NP.cy;\n      const txv=(rx*(Math.cos(az)-1)-ry*Math.sin(az))+\n        FS*(e.angleX*(26+74*(L.depth-1))+e.angleX*(NP.cy-strand.rootY)*0.052+(e.swayHead||0)+w*0.22);\n      const tyv=rx*Math.sin(az)+ry*(Math.cos(az)-1)-\n        FS*(e.angleY*(14+47*(L.depth-1))+(e.breathHead||0)*2.8);\n      if(!sp.ready){sp.stiff.x=sp.soft.x=txv;sp.vertical.x=tyv;sp.ready=true;}\n      RT.spring(sp.stiff,txv,stiffness,2.1*Math.sqrt(stiffness),dt);\n      RT.spring(sp.soft,txv,stiffness*0.45,2.2*Math.sqrt(stiffness*0.45),dt);\n      RT.spring(sp.vertical,tyv,stiffness*0.75,2.2*Math.sqrt(stiffness*0.75),dt);\n      const limit=(front?5:side?8:10)*FS;\n      sp.stiff.dx=clamp(-(sp.stiff.x-txv)*0.8,-limit,limit);\n      sp.soft.dx=clamp(-(sp.soft.x-txv)*1.1,-limit,limit);\n      sp.vertical.dy=clamp(-(sp.vertical.x-tyv)*0.65,-limit*0.6,limit*0.6);\n    }"
     }
   ]
 }

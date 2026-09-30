@@ -44,7 +44,7 @@ function response(fps, seconds) {
     clamp: (value, low, high) => Math.max(low, Math.min(high, value)),
     RT: {clamp: (value, low, high) => Math.max(low, Math.min(high, value))},
     parameterRanges: Object.fromEntries(Object.keys(T).map(key => [key, key.startsWith('eyeOpen') || key === 'mouthOpen' ? [0, 1] : [-3, 3]])),
-    irisBounceT: -1, camPhysScale: 1, updateSprings: () => {},
+    camPhysScale: 1, updateSprings: () => {},
   };
   vm.createContext(context);
   vm.runInContext(animateSource + '\nthis.step=animate;', context);
