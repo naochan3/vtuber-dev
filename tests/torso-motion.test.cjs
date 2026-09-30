@@ -49,3 +49,16 @@ for (const yaw of [-1, 0, 1]) for (const tilt of [-1, 0, 1]) {
   }
 }
 process.stdout.write('肩・胸・腰の分節変形、左右向きの奥行き、頭幅、最大入力の形状: 合格\n');
+const drape = vm.runInNewContext(app.slice(app.indexOf('function drapeMask('), app.indexOf('function prepareLayers(')) + '\ndrapeMask;', {smooth});
+assert.equal(drape(650, 800), 0, '胸の前身頃を保持');
+assert.equal(drape(390, 760), 1, '左の垂れ布を奥へ');
+assert.equal(drape(910, 760), 1, '右の垂れ布を奥へ');
+assert.equal(drape(390, 620), 0, '肩と襟を分割しない');
+assert.equal(drape(390, 1200), 0, '下側の衣装を分割しない');
+for (let y = 700; y <= 1118; y += 10) for (let x = 250; x <= 1050; x += 10) {
+  const mask = drape(x, y);
+  assert.ok(mask >= 0 && mask <= 1);
+  assert.equal(mask, drape(1300 - x, y));
+}
+assert.ok(app.includes('items.unshift({L:L.drapeBack,alpha,clip:null})'));
+process.stdout.write('垂れ布と前身頃のマスク範囲・左右対称・袖の背面への描画: 合格\n');
