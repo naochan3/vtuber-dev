@@ -40,7 +40,7 @@
     },
     {
       "before": "      renderer.upload(L,{positions:L.cur,uvs:uv,indices:idx,image});",
-      "after": "      renderer.upload(L,{positions:L.cur,uvs:uv,indices:idx,image});\n      if(targetId==='a6068e-293dc8a5-5f5ed455'&&L.bn==='neck'){\n        const wear=rig.layers.find(part=>part.name==='topwear');\n        if(!wear)throw new Error('首マスクの基準となる衣装がありません');\n        // 上側だけを衣装より手前へ描き、下側は元の背面描画に残す。\n        const data=new Uint8ClampedArray(Lr.img.data),edge=wear.y+24;\n        for(let y=0;y<image.height;y++){\n          const mask=1-smooth((L.y+y-(edge-2))/2);\n          for(let x=0;x<image.width;x++)data[(y*image.width+x)*4+3]*=mask;\n        }\n        L.neckFront=Object.assign({},L);\n        renderer.upload(L.neckFront,{positions:L.cur,uvs:uv,indices:idx,image:new ImageData(data,image.width,image.height)});\n      }"
+      "after": "      let backImage=image,coverImage=null;\n      if(targetId==='a6068e-293dc8a5-5f5ed455'&&L.bn==='topwear'){\n        const neck=rig.layers.find(part=>part.name==='neck');\n        if(!neck)throw new Error('襟マスクの基準となる首がありません');\n        // 金色の襟の縁に沿って衣装を背面と前面へ分ける。\n        const edges=new Float32Array(image.width);edges.fill(L.y);\n        const start=Math.max(0,neck.x-L.x),end=Math.min(image.width,neck.x+neck.w-L.x);\n        for(let x=start;x<end;x++){\n          edges[x]=NaN;\n          for(let y=0;y<Math.min(image.height,96);y++){\n            const i=(y*image.width+x)*4,d=Lr.img.data;\n            if(d[i+3]>64&&d[i]>140&&d[i+1]>95&&d[i+2]<d[i+1]*0.90){\n              edges[x]=L.y+y;break;\n            }\n          }\n        }\n        let last=Array.from(edges.slice(start,end)).find(Number.isFinite);\n        if(last===undefined)throw new Error('金色の襟の縁を検出できません');\n        for(let x=start;x<end;x++){if(Number.isFinite(edges[x]))last=edges[x];else edges[x]=last;}\n        const back=new Uint8ClampedArray(Lr.img.data),front=new Uint8ClampedArray(Lr.img.data);\n        for(let y=0;y<image.height;y++)for(let x=0;x<image.width;x++){\n          const i=(y*image.width+x)*4+3,mask=smooth((L.y+y-edges[x]+1)/2);\n          front[i]*=mask;back[i]*=1-mask;\n        }\n        backImage=new ImageData(back,image.width,image.height);\n        coverImage=new ImageData(front,image.width,image.height);\n      }\n      renderer.upload(L,{positions:L.cur,uvs:uv,indices:idx,image:backImage});\n      if(coverImage){\n        L.neckCover=Object.assign({},L);\n        renderer.upload(L.neckCover,{positions:L.cur,uvs:uv,indices:idx,image:coverImage});\n      }"
     },
     {
       "before": "function prepareLayers(rig){",
@@ -60,19 +60,19 @@
     },
     {
       "before": "prepared.forEach(renderer.dispose);",
-      "after": "prepared.forEach(L=>{if(L.neckFront)renderer.dispose(L.neckFront);renderer.dispose(L);});"
+      "after": "prepared.forEach(L=>{if(L.neckCover)renderer.dispose(L.neckCover);renderer.dispose(L);});"
     },
     {
       "before": "layers.forEach(renderer.dispose);layers=prepared;currentRig=rig;",
-      "after": "layers.forEach(L=>{if(L.neckFront)renderer.dispose(L.neckFront);renderer.dispose(L);});layers=prepared;currentRig=rig;"
+      "after": "layers.forEach(L=>{if(L.neckCover)renderer.dispose(L.neckCover);renderer.dispose(L);});layers=prepared;currentRig=rig;"
     },
     {
       "before": "  const items=[],masks=[];",
-      "after": "  const items=[],masks=[],neck=layers.find(L=>L.neckFront);"
+      "after": "  const items=[],masks=[],neck=layers.find(L=>L.bn==='neck');"
     },
     {
       "before": "    if(alpha>=0.004)items.push({L,alpha,clip:L.bn==='irides'&&L.side?L.side:null});",
-      "after": "    if(alpha>=0.004)items.push({L,alpha,clip:L.bn==='irides'&&L.side?L.side:null});\n    if(L.bn==='topwear'&&neck&&neck.visible&&neck.opacity>=0.004){\n      renderer.positions(neck.neckFront,neck.cur);\n      items.push({L:neck.neckFront,alpha:neck.opacity,clip:null});\n    }"
+      "after": "    if(alpha>=0.004)items.push({L,alpha,clip:L.bn==='irides'&&L.side?L.side:null});\n    if(L.neckCover){\n      if(neck&&neck.visible&&neck.opacity>=0.004)items.push({L:neck,alpha:neck.opacity,clip:null});\n      renderer.positions(L.neckCover,L.cur);\n      items.push({L:L.neckCover,alpha,clip:null});\n    }"
     }
   ]
 }
