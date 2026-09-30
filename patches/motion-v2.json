@@ -37,6 +37,10 @@
     {
       "before": "if(bn==='neck')hw=0.55*smooth((A.neckBottom-y)/Math.max(1,A.neckBottom-A.neckTop));",
       "after": "if(bn==='neck')hw=0.30+0.70*smooth((A.neckBottom-y)/Math.max(1,A.neckBottom-A.neckTop));"
+    },
+    {
+      "before": "    // --- local features ---",
+      "after": "    // このキャラは襟が顎まで重なるため、襟元だけを下げて首を見せる。\n    if(bn==='topwear'&&modelId==='a6068e-293dc8a5-5f5ed455'){\n      const collarY=smooth((A.neckBottom-y)/Math.max(1,A.neckBottom-L.y));\n      const collarX=1-smooth(Math.abs(x-NP.cx)/Math.max(1,(A.face.x1-A.face.x0)*0.38));\n      y+=40*FS*collarX*collarY;\n    }\n    // --- local features ---"
     }
   ]
 }
