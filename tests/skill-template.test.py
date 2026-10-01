@@ -7,8 +7,9 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable, cast
+from typing import cast
 from unittest.mock import patch
 
 from PIL import Image
