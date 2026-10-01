@@ -37,6 +37,8 @@ OBS用の一式と別PC向け引継ぎを残して。
 
 ## 検証の範囲
 
+初版の合格結果と未確認は [2026-10-01のスキル検査記録](skill-validation-2026-10-01.md) に残しました。
+
 スキルの構造、Pythonの静的検査・実入力、公式固定ソースへの差分適用、6種のNode検査を [スキル検査のGitHub Actions](https://github.com/naochan3/vtuber-dev/actions/workflows/skill-validation.yml) で再現できます。
 検査には小さな合成PSD・透過PNGを使い、作業一式の作成、既存ファイル保護、別modelIdや範囲外マスクの拒否、名前変更と口追加時の元画素保存を確認します。
 
