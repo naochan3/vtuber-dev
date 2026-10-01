@@ -2,14 +2,14 @@
 import argparse
 import json
 import math
-from pathlib import Path
 import re
+from pathlib import Path
 
 
 def install(source: Path, project: Path) -> None:
     profile: object = json.loads(source.read_text(encoding="utf-8"))
     if not isinstance(profile, dict):
-        raise ValueError("画像別マスクはオブジェクトが必要です")
+        raise TypeError("画像別マスクはオブジェクトが必要です")
     model_id = profile.get("model_id")
     if type(profile.get("version")) is not int or profile.get("version") != 1 or not isinstance(model_id, str) or not re.fullmatch(
             r"[0-9a-f]{1,16}-[0-9a-f]{1,8}-[0-9a-f]{1,8}", model_id) or profile.get("layer") != "topwear":

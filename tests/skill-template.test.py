@@ -2,11 +2,11 @@
 import ast
 import hashlib
 import json
-from pathlib import Path
 import subprocess
 import sys
 import tempfile
 import unittest
+from pathlib import Path
 
 from PIL import Image
 from psd_tools import PSDImage
@@ -19,7 +19,7 @@ TEMPLATE = SKILL / "assets/template"
 
 def run(script: Path, *arguments: object, success: bool = True) -> subprocess.CompletedProcess[str]:
     result = subprocess.run([sys.executable, str(script), *(str(a) for a in arguments)],
-                            capture_output=True, text=True, encoding="utf-8")
+                            capture_output=True, text=True, encoding="utf-8", check=False)
     if success and result.returncode:
         raise AssertionError(result.stdout + result.stderr)
     if not success and not result.returncode:

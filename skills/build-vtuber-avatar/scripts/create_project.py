@@ -2,9 +2,9 @@
 import argparse
 import hashlib
 import json
-from pathlib import Path
 import shutil
 import struct
+from pathlib import Path
 
 
 def create(image: Path, output: Path) -> None:
