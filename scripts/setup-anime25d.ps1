@@ -33,4 +33,9 @@ if ($LASTEXITCODE -ne 0) { throw '専用Python環境を起動できません。'
 if ($LASTEXITCODE -ne 0) { throw '動きの調整に失敗しました。元のソースは保管されています。' }
 & $pythonExe (Join-Path $PSScriptRoot 'apply-rig-tuning.py') --source (Join-Path $checkout 'lib/face-features.js') --manifest (Join-Path $projectRoot 'patches/face-tracking-v5.json')
 if ($LASTEXITCODE -ne 0) { throw '顔追跡の調整に失敗しました。元のソースは保管されています。' }
+$avatarTarget = Join-Path $checkout 'avatars'
+New-Item -ItemType Directory -Path $avatarTarget -Force | Out-Null
+foreach ($name in @('base-speaking-v2.psd','base-speaking-v2.rig.json')) {
+    Copy-Item -LiteralPath (Join-Path $projectRoot ('avatars/'+$name)) -Destination (Join-Path $avatarTarget $name)
+}
 Write-Output '準備完了。start-anime25d.ps1を実行してください。'

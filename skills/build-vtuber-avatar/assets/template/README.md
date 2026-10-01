@@ -46,6 +46,7 @@ node tests/eye-hair-motion.test.cjs vendor/Anime2.5DRig/lib/app.js vendor/Anime2
 node tests/face-tracking.test.cjs vendor/Anime2.5DRig/lib/face-features.js
 node tests/occlusion.test.cjs lib/avatar-occlusion.js
 node tests/occlusion-render.test.cjs vendor/Anime2.5DRig/lib/app.js
+node tests/obs-startup.test.cjs vendor/Anime2.5DRig/lib/app.js vendor/Anime2.5DRig/lib/runtime.js avatar
 ```
 
 これは合成入力の回帰検査です。本人の実カメラとOBS・TikTokの結果、FPS・RAM・VRAMは別途記録します。

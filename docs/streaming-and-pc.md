@@ -22,6 +22,14 @@
 
 GitHub PagesのプレビューURLをOBSへ貼るだけでは、別プロセスのOBSへモデルと顔追跡が中継されない。自宅では上記のローカル専用サーバーを使う。仮想カメラはOBSで合成した映像として取り込む。OBS内の透過ブラウザソースと、仮想カメラでの透過合成は分けて考える。
 
+### GitHub PagesのURLでサンプルが出る場合
+
+旧版のOBS用URLは `?obs=1` だけだったため、同期モデルがない公開ページでは公式サンプルを読み込んでいた。改良版はプロジェクトの女性アバターを既定にし、公開ページのコピーURLへPSDと設定の指定を含める。
+
+表示だけを試すURL: [女性アバターのOBS用表示](https://naochan3.github.io/vtuber-dev/?obs=1&model=avatars/base-speaking-v2.psd&settings=avatars/base-speaking-v2.rig.json)。OBSのブラウザソースへ貼り、必要ならソースを更新する。
+
+**これは公開素材の表示用。普通のブラウザのカメラ入力をOBSへ送るURLではない。** カメラ連動はローカル専用サーバーを起動し、通常ブラウザとOBSを同じ `127.0.0.1` へ接続する。ローカルのセットアップもPSDと設定をビューア内へ配置する。旧セットアップからの更新は新規フォルダで行う。
+
 TikTok側の選択項目・利用可否はアカウントとバージョンで実機確認する。仮想カメラが選べない場合はOBSのプロジェクター画面をウィンドウソースで取り込めるか確認する。このプロジェクトではOBS・TikTok LIVE Studioをインストールしておらず、実アプリでの表示・音声・配信は未検証。
 
 公式資料: [OBSブラウザソース](https://obsproject.com/kb/browser-source)、[OBS仮想カメラ](https://obsproject.com/kb/virtual-camera-guide)、[TikTok LIVE Studioの仮想カメラ案内](https://www.tiktok.com/live/studio/help/article/Gaming-Co-host/Gaming-Co-host)。TikTok資料は検索結果の公式説明を確認、ページ本文の取得はできなかった。

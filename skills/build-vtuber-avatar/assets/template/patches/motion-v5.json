@@ -201,6 +201,18 @@
     {
       "before": "bust:2.5,bustY:1,irisScale:1,mouthEase:0.72,eyeEase:0.3",
       "after": "bust:0,bustY:1,irisScale:1,mouthEase:0.3,eyeEase:0.3"
+    },
+    {
+      "before": "    const path=RT.safeRelativePath(QUERY.get('model')||'','.psd');\n    if(path)await loadModel(fetchSource(path),path.split('/').pop(),{relay:false});\n    else await loadSample('B');",
+      "after": "    // OBSの既定アバターはこのプロジェクトの素材。公式サンプルへ切り替えない。\n    const path=RT.safeRelativePath(QUERY.get('model')||'','.psd')||'avatars/avatar.psd';\n    await loadModel(fetchSource(path),path.split('/').pop(),{relay:false});"
+    },
+    {
+      "before": "  if(sync.status.relay){try{const s=await sync.fetchState();if(s)receiveState(s);return;}catch(err){}}\n  const path=RT.safeRelativePath(QUERY.get('settings')||'','.json');\n  if(path){try{const r=await fetch(path);if(r.ok)applySettings(await r.json(),{anyModel:true});}catch(err){console.warn('settings:',err.message);}}",
+      "after": "  if(sync.status.relay){try{const s=await sync.fetchState();if(s){receiveState(s);return;}}catch(err){status('OBS設定を受信できません: '+err.message,true);return;}}\n  const requested=QUERY.get('settings')||'',fallback=modelName==='avatar.psd'?'avatars/avatar.rig.json':'';\n  const path=RT.safeRelativePath(requested||fallback,'.json'),id=modelId;\n  if(path){try{\n    const r=await fetch(path,{cache:'no-store'});\n    if(!r.ok)throw new Error('OBS用の設定を読み込めません');\n    const settings=await r.json();\n    if(id===modelId&&!relayLoadingId)applySettings(settings,{anyModel:!!requested});\n  }catch(err){status(err.message,true);}}"
+    },
+    {
+      "before": "const obsUrl=location.origin+location.pathname.replace(/[^/]*$/,'')+'?obs=1';",
+      "after": "const obsUrl=location.origin+location.pathname.replace(/[^/]*$/,'')+'?obs=1'+(sync.mayRelay?'':'&model=avatars/avatar.psd&settings=avatars/avatar.rig.json');"
     }
   ]
 }
