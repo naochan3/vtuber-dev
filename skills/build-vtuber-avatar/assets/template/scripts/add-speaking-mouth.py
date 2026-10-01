@@ -1,0 +1,95 @@
+"""生成した開き口をPSDの独立レイヤーへ配置し、元レイヤーを検証する。"""
+
+import argparse
+import hashlib
+import json
+from pathlib import Path
+
+from PIL import Image
+from psd_tools import PSDImage
+from psd_tools.api.layers import Layer, PixelLayer
+
+
+def layer_digest(layer: Layer) -> str:
+    image = layer.topil()
+    if image is None:
+        raise ValueError(f"レイヤー画像がありません: {layer.name}")
+    return hashlib.sha256(image.tobytes()).hexdigest()
+
+
+def assemble(source: Path, sprite_path: Path, destination: Path,
+             width: int | None = None, height: int | None = None) -> None:
+    if destination.exists():
+        raise FileExistsError(f"既存PSDは上書きしません: {destination}")
+    psd = PSDImage.open(source)
+    names = [layer.name for layer in psd]
+    if any(layer.is_group() for layer in psd) or len(names) != len(set(names)):
+        raise ValueError("平坦でレイヤー名が重複しないPSDが必要です")
+    mouths = [layer for layer in psd if layer.name == "mouth"]
+    if len(mouths) != 1:
+        raise ValueError("元のmouthレイヤーが一意に見つかりません")
+    closed = mouths[0]
+    original = {layer.name: layer_digest(layer) for layer in psd}
+    with Image.open(sprite_path) as image:
+        sprite = image.convert("RGBA")
+    alpha = sprite.getchannel("A")
+    # ほぼ透明な余白を寸法に含めず、実際の口の輪郭を基準に配置する。
+    bounds = Image.frombytes("L", alpha.size,
+                             bytes(255 if value > 16 else 0 for value in alpha.tobytes())).getbbox()
+    if bounds is None or min(alpha.tobytes()) != 0:
+        raise ValueError("透過した開き口素材が必要です")
+    # 素材の描画はimagegenで実施済み。ここではPSDへの配置だけを行う。
+    closed_image = closed.topil()
+    if closed_image is None:
+        raise ValueError("閉じ口の画素がありません")
+    closed_bounds = closed_image.getchannel("A").getbbox()
+    if closed_bounds is None:
+        raise ValueError("閉じ口が透明です")
+    target_width = width if width is not None else round((closed_bounds[2] - closed_bounds[0]) * 1.1)
+    target_height = height if height is not None else round(target_width * 0.5)
+    if not 2 <= target_width <= psd.width or not 2 <= target_height <= psd.height:
+        raise ValueError("口差分の寸法が画像の範囲外です")
+    sprite = sprite.crop(bounds).resize((target_width, target_height), Image.Resampling.LANCZOS)
+    left = round((closed.left + closed.right) / 2 - sprite.width / 2)
+    top = closed.top
+    closed.name = "mouth_close"
+    closed.visible = True
+    opened = PixelLayer.frompil(sprite, psd, name="mouth_open", top=top, left=left)
+    closed_index = list(psd).index(closed)
+    psd.insert(closed_index + 1, opened)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    psd.save(destination)
+    result = PSDImage.open(destination)
+    preserved = 0
+    for layer in result:
+        if layer.name == "mouth_open":
+            continue
+        original_name = "mouth" if layer.name == "mouth_close" else layer.name
+        if layer_digest(layer) != original[original_name]:
+            raise ValueError(f"元の画素が変化しました: {original_name}")
+        preserved += 1
+    if preserved != len(original) or len(result) != len(original) + 1:
+        raise ValueError("レイヤー数が一致しません")
+    preview = result.composite(force=True)
+    if preview is None:
+        raise ValueError("合成画像を生成できません")
+    preview.save(destination.with_suffix(".png"))
+    print(json.dumps({"output": str(destination), "preserved_layers": preserved,
+                      "layers": len(result), "mouth_bbox": list(opened.bbox),
+                      "sha256": hashlib.sha256(destination.read_bytes()).hexdigest()},
+                     ensure_ascii=False))
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--input", type=Path, required=True)
+    parser.add_argument("--sprite", type=Path, required=True)
+    parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--width", type=int)
+    parser.add_argument("--height", type=int)
+    args = parser.parse_args()
+    assemble(args.input, args.sprite, args.output, args.width, args.height)
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,206 @@
+{
+  "upstream_commit": "7ddbd9943ea3152561b3dc8348fd752c850f3e95",
+  "source_sha256": "6adea8f44cd3989ee4d86aed97ba3a996a24c39202c64cc6c054ddcff4e87877",
+  "replacements": [
+    {
+      "before": "const ab=e.body*0.028,cb=Math.cos(ab),sb=Math.sin(ab);",
+      "after": "// 胴体は末尾の腰・肩の変形で動かす。"
+    },
+    {
+      "before": "let hw=isHead?1:(L.group==='body'?0.16:0);",
+      "after": "let hw=isHead?1:0;"
+    },
+    {
+      "before": "const bodyDX=e.body*0.028*(BP.cy-NP.cy)*0.35+e.angleX*14*0.16*FS;",
+      "after": "const bodyDX=((e.torsoTilt||0)*0.65*28+e.body*0.35*28+(e.torsoYaw||0)*22+(e.angleX-(e.torsoYaw||0))*10)*FS;"
+    },
+    {
+      "before": "    tgt.body=clamp(tgt.body+cam.ax*0.25,-1,1);",
+      "after": "    // 上半身の追従は共通処理で行う。"
+    },
+    {
+      "before": "  const remoteMicLive=OBS_MODE&&performance.now()-remoteMicAt<500;",
+      "after": "  // 首の傾きは胴体の曲がりへ、左右向きは別の追従へ渡す。\n  tgt.body=clamp(tgt.body+tgt.angleZ*0.28,-1,1);\n  const remoteMicLive=OBS_MODE&&performance.now()-remoteMicAt<500;"
+    },
+    {
+      "before": "for(const k in cur){tgt[k]=RT.clamp(tgt[k],...parameterRanges[k]);cur[k]+=(tgt[k]-cur[k])*kSmooth;}",
+      "after": "for(const k in cur){tgt[k]=RT.clamp(tgt[k],...parameterRanges[k]);const rate=k==='body'?5:k.startsWith('angle')?8:k.startsWith('eyeOpen')?22:14;cur[k]+=(tgt[k]-cur[k])*(1-Math.exp(-dt*rate));}"
+    },
+    {
+      "before": "  sync.startPolling();\n  if(CAMERA_MODE)setAuto('cam',true);",
+      "after": "  sync.startPolling();\n  if(!OBS_MODE){\n    (async()=>{\n      await loadModel(fetchSource('avatars/avatar.psd'),'avatar.psd');\n      if(!layers.length)return;\n      const response=await fetch('avatars/avatar.rig.json',{cache:'no-store'});\n      if(response.ok)applySettings(await response.json());\n      else status('初期リグを読み込みました。調整後に設定JSONを書き出してください');\n    })().catch(err=>status('自動読み込みに失敗: '+err.message,true));\n  }\n  if(CAMERA_MODE)setAuto('cam',true);"
+    },
+    {
+      "before": "if(bn==='neck')hw=0.55*smooth((A.neckBottom-y)/Math.max(1,A.neckBottom-A.neckTop));",
+      "after": "if(bn==='neck')hw=smooth((A.neckBottom-y)/Math.max(1,A.neckBottom-A.neckTop));"
+    },
+    {
+      "before": "const az=e.angleZ*0.07,cz=Math.cos(az),sz=Math.sin(az);",
+      "after": "const az=e.angleZ*0.14,cz=Math.cos(az),sz=Math.sin(az);"
+    },
+    {
+      "before": "const headDX=(e.angleX*14+e.angleZ*0.07*(NP.cy-FC.y))*FS;",
+      "after": "const headDX=(e.angleX*26+e.angleZ*0.14*(NP.cy-FC.y))*FS;"
+    },
+    {
+      "before": "x+=hw*FS*(e.angleX*(14+40*(dd-1))+e.angleX*(NP.cy-y)*0.028);",
+      "after": "x+=hw*FS*(e.angleX*(26+74*(dd-1))+e.angleX*(NP.cy-y)*0.052);"
+    },
+    {
+      "before": "y+=hw*FS*(-e.angleY*(9+30*(dd-1))-e.angleY*(dd-1)*(y-FC.y)*0.05);",
+      "after": "y+=hw*FS*(-e.angleY*(14+47*(dd-1))-e.angleY*(dd-1)*(y-FC.y)*0.078);"
+    },
+    {
+      "before": "  const kSmooth=1-Math.exp(-dt*14);",
+      "after": "  // 顔・体はなめらかに、目と口は素早く追従する。"
+    },
+    {
+      "before": "  headGain:[0.3,2,1],eyeGain:[0.5,2,1],mouthGain:[0.5,2.5,1],browGain:[0,2,1],gazeGain:[0,2,1],smoothing:[0,1,0.5],",
+      "after": "  headGain:[0.3,2,1.6],eyeGain:[0.5,2,1],mouthGain:[0.5,2.5,1.4],browGain:[0,2,1],gazeGain:[0,2,1],smoothing:[0,1,0.65],"
+    },
+    {
+      "before": "  linkEyes:['bool',true],trackBrow:['bool',true],trackSmile:['bool',true],camPreview:['bool',true],",
+      "after": "  linkEyes:['bool',false],trackBrow:['bool',true],trackSmile:['bool',true],camPreview:['bool',true],motionProfile:['enum',[0,3],0],"
+    },
+    {
+      "before": "const prefSliders={prefHeadGain:'headGain'",
+      "after": "// 以前のブラウザ設定にも一度だけ新しい追従設定を反映する。\nfunction upgradeMotionPrefs(value){\n  if(value.motionProfile===3)return false;\n  if(value.headGain===1)value.headGain=1.6;\n  if(value.smoothing===0.5)value.smoothing=0.65;\n  value.linkEyes=false;value.motionProfile=3;return true;\n}\nif(upgradeMotionPrefs(prefs))savePrefs();\nconst prefSliders={prefHeadGain:'headGain'"
+    },
+    {
+      "before": "  const kind=L.phys==='sway'?'acc':FRONTISH[bn]?'fh':'bh';",
+      "after": "  const kind=L.phys==='sway'?'acc':FRONTISH[bn]?'fh':'bh';\n  const swayBody=e.swayBody||0,swayHead=e.swayHead||0;"
+    },
+    {
+      "before": "    y-=(L.group==='body'?e.breath*2.0:e.breathHead*1.6)*FS;",
+      "after": "    y-=(L.group==='body'?e.breath*3.5:e.breathHead*2.8)*FS;\n    // 呼吸の横揺れを肩と頭へ渡し、首の両端をつなげる。\n    const neckMix=smooth((A.neckBottom-b[k+1])/Math.max(1,A.neckBottom-A.neckTop));\n    const sway=bn==='neck'?swayBody+(swayHead-swayBody)*neckMix:L.group==='head'?swayHead:L.group==='body'?swayBody:0;\n    x+=sway*FS;"
+    },
+    {
+      "before": "if(bn==='topwear'&&y<CHEST.cy)y-=e.breath*2.2*FS",
+      "after": "if(bn==='topwear'&&y<CHEST.cy)y-=e.breath*3.0*FS"
+    },
+    {
+      "before": "  e.breathHead=0.5+0.5*Math.sin(t*2*Math.PI/3.4-0.6);",
+      "after": "  e.breathHead=0.5+0.5*Math.sin(t*2*Math.PI/3.4-0.6);\n  e.swayBody=4*Math.sin(t*2*Math.PI/3.4);\n  e.swayHead=4.5*Math.sin(t*2*Math.PI/3.4-0.35);"
+    },
+    {
+      "before": "  // --- body rotation (around bottom center) ---\n  if(Math.abs(ab)>1e-4){\n    for(let k=0;k<n;k+=2){const rx=o[k]-BP.cx,ry=o[k+1]-BP.cy;o[k]=BP.cx+rx*cb-ry*sb;o[k+1]=BP.cy+rx*sb+ry*cb;}\n  }",
+      "after": "  // 腰を支点に曲がり、肩の高さと胴体の向きを別々に動かす。\n  const fh=Math.max(1,A.face.y1-A.face.y0),fw=Math.max(1,A.face.x1-A.face.x0);\n  const height=Math.max(1,Math.min(BP.cy-NP.cy,fh*2.2)),waist=NP.cy+height;\n  const yaw=e.torsoYaw||0,tilt=e.torsoTilt||0,pitch=e.torsoPitch||0;\n  const lean=tilt*0.65+e.body*0.35,turnLag=e.angleX-yaw,tiltLag=e.angleZ-tilt;\n  for(let k=0;k<n;k+=2){\n    const weight=smooth((waist-b[k+1])/height);\n    const shoulder=smooth((b[k+1]-NP.cy)/Math.max(1,fh*0.35));\n    const side=clamp((b[k]-NP.cx)/(fw*0.9),-1.3,1.3);\n    o[k]-=(o[k]-NP.cx)*yaw*yaw*0.07*weight*shoulder;\n    o[k]+=FS*weight*(lean*28+yaw*22+turnLag*10);\n    o[k+1]+=FS*weight*shoulder*(side*(lean*14+tiltLag*8+yaw*8)-pitch*10);\n  }"
+    },
+    {
+      "before": "const cur=Object.assign({},P);",
+      "after": "const cur=Object.assign({},P);\nconst bodyFollow={yaw:0,tilt:0,pitch:0};"
+    },
+    {
+      "before": "  const e=Object.assign({},cur);",
+      "after": "  bodyFollow.yaw+=(cur.angleX-bodyFollow.yaw)*(1-Math.exp(-dt*3.8));\n  bodyFollow.tilt+=(cur.angleZ-bodyFollow.tilt)*(1-Math.exp(-dt*3));\n  bodyFollow.pitch+=(cur.angleY-bodyFollow.pitch)*(1-Math.exp(-dt*3.5));\n  const e=Object.assign({},cur,{torsoYaw:bodyFollow.yaw,torsoTilt:bodyFollow.tilt,torsoPitch:bodyFollow.pitch});"
+    },
+    {
+      "before": "  activePreset=data.preset;highlightPresets();\n  Object.assign(cur,T);",
+      "after": "  activePreset=data.preset;highlightPresets();\n  Object.assign(cur,T);\n  Object.assign(bodyFollow,{yaw:cur.angleX,tilt:cur.angleZ,pitch:cur.angleY});"
+    },
+    {
+      "before": "    // --- head transform ---",
+      "after": "    // 左右を向いた頭の幅を少し圧縮し、既存の深度差と組み合わせる。\n    const headMix=bn==='neck'?smooth((A.neckBottom-b[k+1])/Math.max(1,A.neckBottom-A.neckTop)):isHead?1:0;\n    x=FC.x+(x-FC.x)*(1-e.angleX*e.angleX*0.08*headMix);\n    // --- head transform ---"
+    },
+    {
+      "before": "lastFrame=null;blinkT=-1;blinkVariant=1;irisBounceT=-1;",
+      "after": "lastFrame=null;blinkT=-1;blinkVariant=1;"
+    },
+    {
+      "before": "if(key==='blink'&&!value){blinkT=-1;blinkVariant=1;irisBounceT=-1;}",
+      "after": "if(key==='blink'&&!value){blinkT=-1;blinkVariant=1;}"
+    },
+    {
+      "before": "let blinkT=-1,blinkVariant=1,blinkBounceStarted=false,irisBounceT=-1,nextBlink=",
+      "after": "let blinkT=-1,blinkVariant=1,nextBlink="
+    },
+    {
+      "before": "blinkT=0;blinkBounceStarted=false;blinkVariant=",
+      "after": "blinkT=0;blinkVariant="
+    },
+    {
+      "before": "        if(!blinkBounceStarted&&v>0.12){blinkBounceStarted=true;irisBounceT=0;}\n",
+      "after": ""
+    },
+    {
+      "before": "  if(irisBounceT>=0){irisBounceT+=dt;if(irisBounceT>0.52)irisBounceT=-1;}\n",
+      "after": ""
+    },
+    {
+      "before": "  if(irisBounceT>=0){\n    const p=irisBounceT/0.52,damp=Math.exp(-2.2*p);\n    const scale=1+0.18*Math.sin(p*Math.PI*4.0)*damp,squash=0.10*Math.sin(p*Math.PI*4.0+Math.PI/2)*damp;\n    e.irisBounceX=scale*(1+squash);e.irisBounceY=scale*(1-squash);\n  }\n",
+      "after": ""
+    },
+    {
+      "before": "soft:{x:0,v:0,dx:0},phase:i*1.37+L.z",
+      "after": "soft:{x:0,v:0,dx:0},vertical:{x:0,v:0,dy:0},phase:i*1.37+L.z"
+    },
+    {
+      "before": "      x+=dx*amp;y+=Math.abs(dx)*amp*0.12;",
+      "after": "      x+=dx*amp;\n      if(kind==='acc')y+=Math.abs(dx)*amp*0.12;\n      else{let dy=0;for(let s=0;s<nS;s++)dy+=L.sw[vi*nS+s]*L.spr[s].vertical.dy;y+=dy*amp;}"
+    },
+    {
+      "before": "    const base=L.group==='head'?headDX:bodyDX,windScale=L.phys==='sway'&&L.group!=='head'?2.5:1;\n    for(const sp of L.spr){\n      const w=wind?(1.8*Math.sin(t*0.8+sp.phase)+1.0*Math.sin(t*1.9+sp.phase*2.3))*windScale:0;\n      const txv=base+w*FS;\n      RT.spring(sp.stiff,txv,70,9,dt);sp.stiff.dx=-(sp.stiff.x-txv)*2.2;\n      RT.spring(sp.soft,txv,16,1.3,dt);sp.soft.dx=-(sp.soft.x-txv)*3.0;\n    }",
+      "after": "    const hair=L.bn==='front hair'||L.bn==='side hair'||L.bn==='back hair'||L.bn==='ahoge';\n    const base=L.group==='head'?headDX:bodyDX,windScale=L.phys==='sway'&&L.group!=='head'?2.5:1;\n    for(let index=0;index<L.spr.length;index++){\n      const sp=L.spr[index];\n      const w=wind?(1.8*Math.sin(t*0.8+sp.phase)+1.0*Math.sin(t*1.9+sp.phase*2.3))*windScale:0;\n      if(!hair){\n        const txv=base+w*FS;\n        RT.spring(sp.stiff,txv,70,9,dt);sp.stiff.dx=-(sp.stiff.x-txv)*2.2;\n        RT.spring(sp.soft,txv,16,1.3,dt);sp.soft.dx=-(sp.soft.x-txv)*3.0;\n        continue;\n      }\n      // 毛束の長さ・根元位置・前後で反応を変え、跳ね返りを強く減衰する。\n      const strand=L.strands[index],front=L.bn==='front hair',side=L.bn==='side hair';\n      const length=clamp((strand.tipY-strand.rootY)/FS,35,500);\n      const stiffness=(front?155:side?105:80)/(0.7+length/350);\n      const az=e.angleZ*0.14,rx=strand.x-NP.cx,ry=strand.rootY-NP.cy;\n      const txv=(rx*(Math.cos(az)-1)-ry*Math.sin(az))+\n        FS*(e.angleX*(26+74*(L.depth-1))+e.angleX*(NP.cy-strand.rootY)*0.052+(e.swayHead||0)+w*0.22);\n      const tyv=rx*Math.sin(az)+ry*(Math.cos(az)-1)-\n        FS*(e.angleY*(14+47*(L.depth-1))+(e.breathHead||0)*2.8);\n      if(!sp.ready){sp.stiff.x=sp.soft.x=txv;sp.vertical.x=tyv;sp.ready=true;}\n      RT.spring(sp.stiff,txv,stiffness,2.1*Math.sqrt(stiffness),dt);\n      RT.spring(sp.soft,txv,stiffness*0.45,2.2*Math.sqrt(stiffness*0.45),dt);\n      RT.spring(sp.vertical,tyv,stiffness*0.75,2.2*Math.sqrt(stiffness*0.75),dt);\n      const limit=(front?5:side?8:10)*FS;\n      sp.stiff.dx=clamp(-(sp.stiff.x-txv)*0.8,-limit,limit);\n      sp.soft.dx=clamp(-(sp.soft.x-txv)*1.1,-limit,limit);\n      sp.vertical.dy=clamp(-(sp.vertical.x-tyv)*0.65,-limit*0.6,limit*0.6);\n    }"
+    },
+    {
+      "before": "(-e.brow*9+(1-vOpen)*3.5)",
+      "after": "(-e.brow*18+(1-vOpen)*3.5)"
+    },
+    {
+      "before": "-e.angleY*(14+47*(dd-1))-e.angleY*(dd-1)*(y-FC.y)*0.078",
+      "after": "-e.angleY*(24+58*(dd-1))-e.angleY*(dd-1)*(y-FC.y)*0.098"
+    },
+    {
+      "before": "e.angleY*(14+47*(L.depth-1))",
+      "after": "e.angleY*(24+58*(L.depth-1))"
+    },
+    {
+      "before": "function prepareLayers(rig){",
+      "after": "function prepareLayers(rig,targetId){"
+    },
+    {
+      "before": "function applyRig(rig){",
+      "after": "function applyRig(rig,targetId=modelId){"
+    },
+    {
+      "before": "const prepared=prepareLayers(rig);",
+      "after": "const prepared=prepareLayers(rig,targetId);"
+    },
+    {
+      "before": "applyRig(parsed.rig);",
+      "after": "applyRig(parsed.rig,parsed.id||'');"
+    },
+    {
+      "before": "      renderer.upload(L,{positions:L.cur,uvs:uv,indices:idx,image});",
+      "after": "      const parts=window.AvatarOcclusion.split(image,L,rig.canvas,targetId,window.AvatarProfile||null);\n      const img=data=>new ImageData(data,image.width,image.height);\n      renderer.upload(L,{positions:L.cur,uvs:uv,indices:idx,image:parts?img(parts.back):image});\n      if(parts&&parts.front){\n        L.neckCover=Object.assign({},L);\n        renderer.upload(L.neckCover,{positions:L.cur,uvs:uv,indices:idx,image:img(parts.front)});\n      }\n      if(parts&&parts.rear){\n        L.drapeBack=Object.assign({},L,{neckCover:null});\n        renderer.upload(L.drapeBack,{positions:L.cur,uvs:uv,indices:idx,image:img(parts.rear)});\n      }"
+    },
+    {
+      "before": "prepared.forEach(renderer.dispose);",
+      "after": "prepared.forEach(L=>{if(L.neckCover)renderer.dispose(L.neckCover);if(L.drapeBack)renderer.dispose(L.drapeBack);renderer.dispose(L);});"
+    },
+    {
+      "before": "layers.forEach(renderer.dispose);layers=prepared;currentRig=rig;",
+      "after": "layers.forEach(L=>{if(L.neckCover)renderer.dispose(L.neckCover);if(L.drapeBack)renderer.dispose(L.drapeBack);renderer.dispose(L);});layers=prepared;currentRig=rig;"
+    },
+    {
+      "before": "  const items=[],masks=[];",
+      "after": "  const items=[],masks=[],neck=layers.find(L=>L.bn==='neck'),collar=layers.find(L=>L.neckCover&&L.visible&&L.opacity>=0.004);\n  if(collar&&neck){deform(neck,e);renderer.positions(neck,neck.cur);}"
+    },
+    {
+      "before": "  for(const L of layers){\n    const isMask=L.bn==='eyewhite'&&!!L.side;",
+      "after": "  for(const L of layers){\n    if(collar&&L===neck)continue;\n    const isMask=L.bn==='eyewhite'&&!!L.side;"
+    },
+    {
+      "before": "    deform(L,e);renderer.positions(L,L.cur);\n    if(isMask)",
+      "after": "    deform(L,e);renderer.positions(L,L.cur);\n    if(L.drapeBack&&alpha>=0.004){\n      renderer.positions(L.drapeBack,L.cur);\n      items.unshift({L:L.drapeBack,alpha,clip:null});\n    }\n    if(isMask)"
+    },
+    {
+      "before": "    if(alpha>=0.004)items.push({L,alpha,clip:L.bn==='irides'&&L.side?L.side:null});",
+      "after": "    if(alpha>=0.004)items.push({L,alpha,clip:L.bn==='irides'&&L.side?L.side:null});\n    if(L.neckCover&&alpha>=0.004){\n      if(neck&&neck.visible&&neck.opacity>=0.004)items.push({L:neck,alpha:neck.opacity,clip:null});\n      renderer.positions(L.neckCover,L.cur);items.push({L:L.neckCover,alpha,clip:null});\n    }"
+    },
+    {
+      "before": "bust:2.5,bustY:1,irisScale:1,mouthEase:0.72,eyeEase:0.3",
+      "after": "bust:0,bustY:1,irisScale:1,mouthEase:0.3,eyeEase:0.3"
+    }
+  ]
+}

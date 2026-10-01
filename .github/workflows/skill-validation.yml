@@ -1,0 +1,52 @@
+name: VTuberスキル検査
+on:
+  push:
+    paths:
+      - 'skills/build-vtuber-avatar/**'
+      - 'tests/skill-template.test.py'
+      - '.github/workflows/skill-validation.yml'
+  pull_request:
+    paths:
+      - 'skills/build-vtuber-avatar/**'
+      - 'tests/skill-template.test.py'
+      - '.github/workflows/skill-validation.yml'
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: GitHubの一時環境に検査用ライブラリを用意
+        run: python -m pip install psd-tools==1.14.2 ruff==0.16.9 mypy==2.3.1 types-Pillow==10.2.0.20240822
+      - name: Python補助の静的検査と実入力の検査
+        run: |
+          python -m ruff check skills/build-vtuber-avatar/scripts skills/build-vtuber-avatar/assets/template/scripts tests/skill-template.test.py
+          python -m mypy --strict skills/build-vtuber-avatar/scripts skills/build-vtuber-avatar/assets/template/scripts tests/skill-template.test.py
+          python tests/skill-template.test.py -v
+      - name: 固定版の公式ソースへ汎用差分を適用
+        run: |
+          mkdir -p /tmp/avatar-skill
+          base=https://raw.githubusercontent.com/852wa/Anime2.5DRig/7ddbd9943ea3152561b3dc8348fd752c850f3e95
+          curl --fail --silent --show-error "$base/lib/app.js" -o /tmp/avatar-skill/app.js
+          curl --fail --silent --show-error "$base/lib/face-features.js" -o /tmp/avatar-skill/face-features.js
+          curl --fail --silent --show-error "$base/lib/runtime.js" -o /tmp/avatar-skill/runtime.js
+          python skills/build-vtuber-avatar/assets/template/scripts/apply-rig-tuning.py --source /tmp/avatar-skill/app.js --manifest skills/build-vtuber-avatar/assets/template/patches/motion-v5.json
+          python skills/build-vtuber-avatar/assets/template/scripts/apply-rig-tuning.py --source /tmp/avatar-skill/face-features.js --manifest skills/build-vtuber-avatar/assets/template/patches/face-tracking-v5.json
+      - name: 動きと描画順の6種の回帰検査
+        run: |
+          t=skills/build-vtuber-avatar/assets/template
+          node --check /tmp/avatar-skill/app.js
+          node --check /tmp/avatar-skill/face-features.js
+          node "$t/tests/motion-profile.test.cjs" /tmp/avatar-skill/app.js /tmp/avatar-skill/face-features.js
+          node "$t/tests/torso-motion.test.cjs" /tmp/avatar-skill/app.js
+          node "$t/tests/eye-hair-motion.test.cjs" /tmp/avatar-skill/app.js /tmp/avatar-skill/runtime.js
+          node "$t/tests/face-tracking.test.cjs" /tmp/avatar-skill/face-features.js
+          node "$t/tests/occlusion.test.cjs" "$t/lib/avatar-occlusion.js"
+          node "$t/tests/occlusion-render.test.cjs" /tmp/avatar-skill/app.js

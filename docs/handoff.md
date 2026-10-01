@@ -5,6 +5,7 @@
 ## 最初に読むもの
 
 - [README](../README.md): 起動方法と全体の進め方。
+- [VTuber作成スキル](reusable-skill.md): 別画像から作るためのスキル本体、検査、別PCへの導入。
 - [調整ナレッジ](knowledge.md): なぜ調整したか、どこを直したか。
 - [検証記録](validation-2026-09-30.md): 確認済み・未確認と成果物のハッシュ。
 - [AGENTS.md](../AGENTS.md): エージェントが維持する制約。

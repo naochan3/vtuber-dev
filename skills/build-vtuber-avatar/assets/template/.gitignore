@@ -1,0 +1,8 @@
+vendor/
+.venv*/
+__pycache__/
+*.pyc
+.env*
+models/
+output/
+*token*

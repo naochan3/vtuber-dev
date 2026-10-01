@@ -1,0 +1,4 @@
+interface:
+  display_name: "画像から動くVTuberを作る"
+  short_description: "一枚絵からパーツ分け・自然な動き・崩れ検査・OBS用の引継ぎまで作成する"
+  default_prompt: "$build-vtuber-avatar この画像から、頭・眉・口・ウィンク・髪・上半身が動くアバターとOBS用の一式を作ってください。"
