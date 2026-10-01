@@ -2,6 +2,12 @@
 
 この一式は `build-vtuber-avatar` スキルの汎用テンプレートです。完成したPSDと設定JSONを `avatars/` に置いて利用します。生成途中かどうかは `run.json` と `evidence/validation.md` を確認してください。
 
+## 素材を作る実行先
+
+GPU生成はColabでも、準備済みの自宅・別GPUホストでも行えます。Colab用ノートは一例です。既存PSDからなら生成を省けます。実行先に関係なく、最終PSD・同じPSDの設定JSON・画像別マスク・検査・引継ぎを同じ組で渡します。
+
+準備済みSee-through環境には `scripts/generate-psd.py --python <GPU環境Python> --checkout <固定版ソース> --image input/source.png --output <新規出力>` を使います。公式READMEの依存関係を満たす必要があり、全OS・GPUの互換性を保証するものではありません。
+
 ## 自宅で起動
 
 Windows、Git、Python 3、WebGL対応Chrome / Edgeを前提に、プロジェクトのフォルダで実行します。会社PCでは環境を作らず、PSD生成は許可されたColab等で実施します。

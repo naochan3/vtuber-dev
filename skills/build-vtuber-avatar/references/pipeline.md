@@ -8,9 +8,9 @@
 
 `scripts/create_project.py` が作る `run.json` に入力ハッシュと未検証状態が残る。アルファ付きヘッダーのチェックは透明画素や絵の品質を証明しない。画像を見て、透明画素と空でない描画を画素単位でも確認する。
 
-## GPUで分解
+## 実行先を選び、GPUで分解
 
-テンプレートの `notebooks/seethrough-colab.ipynb` を使う。固定版は次の通り。
+既存の許可・GPU・依存ライブラリ・予算から実行先を選ぶ。Colabを必須にしない。生成が終われば同じPSD・ログ・ハッシュを次の工程へ渡す。固定版は次の通り。
 
 | 対象 | ソース |
 |---|---|
@@ -20,7 +20,17 @@
 
 ColabノートブックはPython 3.12、Torch 2.8.0+cu128、BF16対応GPUの既存検証経路。L4で成功した経路だが、自宅や他GPUの所要時間として転記しない。実行前に公式README・LICENSEと使用重みのモデルカードを確認する。
 
-許可されたアカウントと既存契約で実行する。未ログインならユーザーがログインするまでGPU実行は待つ。会社側のアカウントを勝手に使わず、Drive全体のマウントやGitHubトークンは不要。ノートブックへの画像アップロードが許可された範囲か確認する。
+Colabならテンプレートの `notebooks/seethrough-colab.ipynb` を使う。許可されたアカウントと既存契約で実行する。未ログインならユーザーがログインするまでGPU実行は待つ。会社側のアカウントを勝手に使わず、Drive全体のマウントやGitHubトークンは不要。ノートブックへの画像アップロードが許可された範囲か確認する。
+
+ローカルや別GPUホストなら、公式READMEに従って専用Python 3.12環境・CUDA用PyTorch・requirements・assetsを準備する。環境の新規構築は許可された機器だけで行う。既存のGPU環境がある場合はそれを優先し、Windows・Linux・ドライバの互換性は実行時に確認する。ネイティブWindowsや全GPUでの動作を保証せず、必要な環境変更を無断で行わない。
+
+準備済み環境では `scripts/generate-psd.py` に実行Python・固定版ソース・入力・新規出力を渡す。これはColab固有のAPI・Drive・ユーザー名に依存しない。入力の透過画素・固定コミット・上書き禁止を確認し、時間上限・失敗ログ・入力ハッシュを共通形式で記録する。
+
+```text
+python scripts/generate-psd.py --python <GPU環境のPython> --checkout <See-through固定版フォルダ> --image input/source.png --output <新規生成フォルダ>
+```
+
+この入口のプロセス制御は一時環境の模擬推論でも検査するが、実GPUによるローカル生成の実績とは区別する。既存PSDを渡された場合はGPU生成を省き、以降の名前・画素・動き・前後関係の同じ検査を行う。
 
 推論CLIは `inference/scripts/inference_psd.py --srcp <PNG> --save_dir <出力> --save_to_psd --tblr_split --group_offload`。初回推論が長いため、ログを保持して進捗を確認する。テンプレートは1実行30分を上限にして停止する。契約や利用者の予算により短くできる。失敗原因を調べず新たなGPU実行を反復しない。
 

@@ -2,11 +2,14 @@
 import ast
 import hashlib
 import json
+import runpy
 import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Callable, cast
+from unittest.mock import patch
 
 from PIL import Image
 from psd_tools import PSDImage
@@ -85,6 +88,51 @@ class SkillTemplateTest(unittest.TestCase):
                 ast.parse("".join(cell["source"]))
         for path in SKILL.rglob("*.py"):
             ast.parse(path.read_text(encoding="utf-8"))
+
+    def test_generation_entry_success_timeout_and_wrong_version(self) -> None:
+        engine = self.work / "engine"
+        scripts = engine / "inference/scripts"
+        scripts.mkdir(parents=True)
+        inference = scripts / "inference_psd.py"
+        inference.write_text(
+            "import argparse, json\nfrom pathlib import Path\nfrom psd_tools import PSDImage\n"
+            "p=argparse.ArgumentParser();p.add_argument('--srcp');p.add_argument('--save_dir');"
+            "p.add_argument('--save_to_psd',action='store_true');p.add_argument('--tblr_split',action='store_true');"
+            "p.add_argument('--group_offload',action='store_true');a=p.parse_args();"
+            "d=Path(a.save_dir);PSDImage.new('RGB',(128,128)).save(d/'sample.psd');"
+            "(d/'arguments.json').write_text(json.dumps(vars(a)))\n", encoding="utf-8")
+        module = runpy.run_path(str(TEMPLATE / "scripts/generate-psd.py"))
+        generate = cast(Callable[[Path, Path, Path, Path, int], None], module["generate"])
+        valid = self.work / "generated"
+        # GPU推論だけを小さな別プロセスに置換し、入口・ログ・上限は実処理を検査する。
+        with patch("subprocess.check_output", return_value=module["COMMIT"]):
+            # 空の絵は生成開始前に拒否される。
+            with self.assertRaises(subprocess.CalledProcessError):
+                generate(Path(sys.executable), engine, self.image, valid, 10)
+            self.assertFalse(valid.exists())
+            image = Image.new("RGBA", (256, 256), (0, 0, 0, 0))
+            image.paste((10, 20, 30, 255), (20, 20, 180, 220))
+            image.save(self.image)
+            generate(Path(sys.executable), engine, self.image, valid, 10)
+            metrics = json.loads((valid / "generation.json").read_text(encoding="utf-8"))
+            self.assertEqual(metrics["status"], "generated")
+            self.assertEqual(metrics["input_sha256"], hashlib.sha256(self.image.read_bytes()).hexdigest())
+            self.assertEqual(PSDImage.open(valid / "psd/sample.psd").size, (128, 128))
+            arguments = json.loads((valid / "psd/arguments.json").read_text(encoding="utf-8"))
+            self.assertTrue(arguments["save_to_psd"] and arguments["tblr_split"] and arguments["group_offload"])
+            with self.assertRaises(FileExistsError):
+                generate(Path(sys.executable), engine, self.image, valid, 10)
+            inference.write_text("import time; time.sleep(30)\n", encoding="utf-8")
+            timeout = self.work / "timed-out"
+            with self.assertRaises(TimeoutError):
+                generate(Path(sys.executable), engine, self.image, timeout, 1)
+            self.assertEqual(json.loads((timeout / "generation.json").read_text(encoding="utf-8"))["status"], "failed")
+            self.assertTrue((timeout / "inference.log").exists())
+        with patch("subprocess.check_output", return_value="unknown"):
+            unknown = self.work / "wrong-version"
+            with self.assertRaises(ValueError):
+                generate(Path(sys.executable), engine, self.image, unknown, 10)
+            self.assertFalse(unknown.exists())
 
     def test_normalize_and_mouth_scale_preserve_pixels(self) -> None:
         psd = PSDImage.new("RGBA", (256, 256))
